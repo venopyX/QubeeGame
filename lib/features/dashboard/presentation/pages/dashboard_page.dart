@@ -10,7 +10,7 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('QubeeLearn Dashboard'),
+        title: const Text('QubeeGame Dashboard'),
       ),
       body: Center(
         child: Column(

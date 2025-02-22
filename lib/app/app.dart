@@ -4,15 +4,15 @@ import 'di/setup.dart';
 import 'routes/app_routes.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 
-class QubeeLearnApp extends StatelessWidget {
-  const QubeeLearnApp({super.key});
+class QubeeGameApp extends StatelessWidget {
+  const QubeeGameApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: providers,
       child: MaterialApp(
-        title: 'QubeeLearn',
+        title: 'QubeeGame',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
