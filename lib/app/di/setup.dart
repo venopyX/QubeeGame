@@ -1,6 +1,5 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-import '../../features/dashboard/presentation/providers/dashboard_provider.dart';
 import '../../features/hibboo/data/datasources/hibboo_datasource.dart';
 import '../../features/hibboo/data/repositories/hibboo_repository_impl.dart';
 import '../../features/hibboo/domain/usecases/get_hibboo_list.dart';
@@ -13,7 +12,6 @@ void setupDependencies() {
 
 // Root widget with MultiProvider
 List<SingleChildWidget> get providers => [
-  ChangeNotifierProvider(create: (_) => DashboardProvider()),
   ChangeNotifierProvider(
     create: (_) {
       final datasource = HibbooDatasource();

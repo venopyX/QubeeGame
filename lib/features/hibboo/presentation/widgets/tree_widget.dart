@@ -185,30 +185,23 @@ class _TreeWidgetState extends State<TreeWidget> with TickerProviderStateMixin {
   }
 
   TreeTheme _getTreeTheme() {
+    // Using a switch with fallthrough to make it easy to extend
+    // with more levels in the future
     switch (widget.stage) {
-      case 'Seedling':
+      case 'Grand Tree':
         return TreeTheme(
-          trunkHeight: 50,
-          trunkWidth: 10,
-          leafSize: 30,
-          trunkColor: Colors.brown[300]!,
-          leafColor: Colors.green[300]!,
-        );
-      case 'Sapling':
-        return TreeTheme(
-          trunkHeight: 100,
-          trunkWidth: 15,
-          leafSize: 40,
-          trunkColor: Colors.brown[400]!,
-          leafColor: Colors.green[400]!,
-        );
-      case 'Young Tree':
-        return TreeTheme(
-          trunkHeight: 150,
-          trunkWidth: 20,
-          leafSize: 50,
-          trunkColor: Colors.brown[500]!,
-          leafColor: Colors.green[500]!,
+          trunkHeight: 250,
+          trunkWidth: 30,
+          leafSize: 70,
+          trunkColor: Colors.brown[700]!,
+          leafColor: Colors.green[700]!,
+          specialFeatures: [
+            // Add special decorations for Grand Tree
+            Positioned(
+              top: -20,
+              child: Icon(Icons.brightness_7, color: Colors.amber[600], size: 40),
+            ),
+          ],
         );
       case 'Mature Tree':
         return TreeTheme(
@@ -217,14 +210,42 @@ class _TreeWidgetState extends State<TreeWidget> with TickerProviderStateMixin {
           leafSize: 60,
           trunkColor: Colors.brown[600]!,
           leafColor: Colors.green[600]!,
+          specialFeatures: [
+            // Add special decorations for Mature Tree
+            Positioned(
+              bottom: 50,
+              right: 30,
+              child: Icon(Icons.auto_awesome, color: Colors.amber[300], size: 24),
+            ),
+          ],
         );
-      default: // Grand Tree
+      case 'Young Tree':
         return TreeTheme(
-          trunkHeight: 250,
-          trunkWidth: 30,
-          leafSize: 70,
-          trunkColor: Colors.brown[700]!,
-          leafColor: Colors.green[700]!,
+          trunkHeight: 150,
+          trunkWidth: 20,
+          leafSize: 50,
+          trunkColor: Colors.brown[500]!,
+          leafColor: Colors.green[500]!,
+          specialFeatures: [],
+        );
+      case 'Sapling':
+        return TreeTheme(
+          trunkHeight: 100,
+          trunkWidth: 15,
+          leafSize: 40,
+          trunkColor: Colors.brown[400]!,
+          leafColor: Colors.green[400]!,
+          specialFeatures: [],
+        );
+      case 'Seedling':
+      default:
+        return TreeTheme(
+          trunkHeight: 50,
+          trunkWidth: 10,
+          leafSize: 30,
+          trunkColor: Colors.brown[300]!,
+          leafColor: Colors.green[300]!,
+          specialFeatures: [],
         );
     }
   }
@@ -236,6 +257,7 @@ class TreeTheme {
   final double leafSize;
   final Color trunkColor;
   final Color leafColor;
+  final List<Widget> specialFeatures; // Added to support level-specific decorations
 
   TreeTheme({
     required this.trunkHeight,
@@ -243,16 +265,16 @@ class TreeTheme {
     required this.leafSize,
     required this.trunkColor,
     required this.leafColor,
+    this.specialFeatures = const [],
   });
 }
 
 class CloudPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint =
-        Paint()
-          ..color = Colors.white.withOpacity(0.7)
-          ..style = PaintingStyle.fill;
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.7)
+      ..style = PaintingStyle.fill;
 
     void drawCloud(double x, double y, double scale) {
       canvas.drawCircle(Offset(x, y), 20 * scale, paint);

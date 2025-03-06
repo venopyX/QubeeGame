@@ -20,7 +20,7 @@
 │   │   ├── errors/         # Custom error classes and global error handling
 │   │   └── extensions/     # Dart extensions for convenience
 │   ├── features/           # Feature-specific modules
-│   │   ├── feature1/       # Example feature (e.g., 'auth', 'dashboard')
+│   │   ├── feature1/       # Example feature (e.g., 'auth', 'hibboo')
 │   │   │   ├── data/       # Data layer
 │   │   │   │   ├── datasources/  # Local and remote data sources
 │   │   │   │   ├── models/       # Data models (e.g., JSON serializable)

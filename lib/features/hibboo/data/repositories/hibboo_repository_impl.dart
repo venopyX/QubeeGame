@@ -14,7 +14,7 @@ class HibbooRepositoryImpl implements HibbooRepository {
     return models.map((model) => Hibboo(
       text: model.text,
       answer: model.answer,
-      stage: model.stage,
+      level: model.level,
     )).toList();
   }
 }

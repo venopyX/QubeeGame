@@ -1,19 +1,19 @@
 class HibbooModel {
   final String text;
   final String answer;
-  final String stage;
+  final int level;
 
   HibbooModel({
     required this.text,
     required this.answer,
-    required this.stage,
+    required this.level,
   });
 
   factory HibbooModel.fromJson(Map<String, dynamic> json) {
     return HibbooModel(
       text: json['text'],
       answer: json['answer'],
-      stage: json['stage'],
+      level: json['level'] is int ? json['level'] : int.parse(json['level'].toString()), // Handle potential string values
     );
   }
 
@@ -21,7 +21,7 @@ class HibbooModel {
     return {
       'text': text,
       'answer': answer,
-      'stage': stage,
+      'level': level,
     };
   }
 }
