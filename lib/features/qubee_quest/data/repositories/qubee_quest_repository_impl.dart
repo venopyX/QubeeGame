@@ -2,8 +2,6 @@ import '../../domain/repositories/qubee_quest_repository.dart';
 import '../datasources/qubee_quest_datasource.dart';
 import '../../domain/entities/qubee.dart';
 import '../../domain/entities/land.dart';
-import '../models/qubee_model.dart';
-import '../models/land_model.dart';
 
 class QubeeQuestRepositoryImpl implements QubeeQuestRepository {
   final QubeeQuestDatasource _datasource;

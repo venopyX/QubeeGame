@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/qubee.dart';
-import 'dart:ui' as ui;
 
 class LetterTracingWidget extends StatefulWidget {
   final Qubee letter;
