@@ -222,6 +222,14 @@ class HomePage extends StatelessWidget {
   Widget _buildGameGrid(BuildContext context) {
     final games = [
       _GameInfo(
+        title: 'Oromo Playhouse',
+        description: 'Learn with fun videos and mini-games',
+        icon: Icons.video_library,
+        color: Colors.orange,
+        comingSoon: false,
+        routeName: AppRoutes.playhouseDashboard,
+      ),
+      _GameInfo(
         title: 'Word Weaver',
         description: 'Create words from Qubee letters',
         icon: Icons.abc,
@@ -232,13 +240,6 @@ class HomePage extends StatelessWidget {
         title: 'Story Tap',
         description: 'Interactive Oromo stories',
         icon: Icons.auto_stories,
-        color: Colors.orange,
-        comingSoon: true,
-      ),
-      _GameInfo(
-        title: 'Sound Safari',
-        description: 'Learn Oromo pronunciations',
-        icon: Icons.music_note,
         color: Colors.blue,
         comingSoon: true,
       ),
@@ -254,121 +255,126 @@ class HomePage extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.all(20),
       sliver: SliverGrid(
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 300, // Maximum width for each item
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-        childAspectRatio: 0.85,
-      ),
-      delegate: SliverChildBuilderDelegate(
-        (context, index) => _buildGameCard(context, games[index])
-          .animate()
-          .fadeIn(delay: (100 * index).ms)
-          .slideY(begin: 0.2),
-        childCount: games.length,
-      ),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 300, // Maximum width for each item
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.85,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => _buildGameCard(context, games[index])
+            .animate()
+            .fadeIn(delay: (100 * index).ms)
+            .slideY(begin: 0.2),
+          childCount: games.length,
+        ),
       ),
     );
   }
 
   Widget _buildGameCard(BuildContext context, _GameInfo game) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -20,
-              top: -20,
-              child: Icon(
-                game.icon,
-                size: 100,
-                color: game.color.withOpacity(0.1),
-              ),
+    return GestureDetector(
+      onTap: game.comingSoon ? null : () {
+        Navigator.pushNamed(context, game.routeName!);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            if (game.comingSoon)
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
               Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.amber[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Coming Soon',
-                    style: TextStyle(
-                      color: Colors.amber[800],
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                right: -20,
+                top: -20,
+                child: Icon(
+                  game.icon,
+                  size: 100,
+                  color: game.color.withOpacity(0.1),
+                ),
+              ),
+              if (game.comingSoon)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.amber[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Coming Soon',
+                      style: TextStyle(
+                        color: Colors.amber[800],
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    game.icon,
-                    size: 32,
-                    color: game.color,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    game.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      game.icon,
+                      size: 32,
+                      color: game.color,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    game.description,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
+                    const SizedBox(height: 16),
+                    Text(
+                      game.title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  if (!game.comingSoon)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                    const SizedBox(height: 8),
+                    Text(
+                      game.description,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
                       ),
-                      decoration: BoxDecoration(
-                        color: game.color.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'Play',
-                        style: TextStyle(
-                          color: game.color,
-                          fontWeight: FontWeight.bold,
+                    ),
+                    const Spacer(),
+                    if (!game.comingSoon)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: game.color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'Play',
+                          style: TextStyle(
+                            color: game.color,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -381,6 +387,7 @@ class _GameInfo {
   final IconData icon;
   final Color color;
   final bool comingSoon;
+  final String? routeName;
 
   _GameInfo({
     required this.title,
@@ -388,5 +395,6 @@ class _GameInfo {
     required this.icon,
     required this.color,
     this.comingSoon = false,
+    this.routeName,
   });
 }
