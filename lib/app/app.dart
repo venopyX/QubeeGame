@@ -12,7 +12,8 @@ class QubeeGameApp extends StatelessWidget {
     return MultiProvider(
       providers: providers,
       child: MaterialApp(
-        title: 'QubeeGame',
+        debugShowCheckedModeBanner: false,
+        title: 'QubeeGames',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
