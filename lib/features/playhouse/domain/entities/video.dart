@@ -5,7 +5,7 @@ class Video {
   final String videoId; // YouTube video ID
   final String description;
   final List<String> tags;
-  final bool isUnlocked;
+  final String? category;
 
   Video({
     required this.id,
@@ -14,6 +14,6 @@ class Video {
     required this.videoId,
     required this.description,
     this.tags = const [],
-    this.isUnlocked = false,
+    this.category,
   });
 }
