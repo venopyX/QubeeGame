@@ -1,8 +1,6 @@
 import '../../domain/entities/video.dart';
-import '../../domain/entities/playhouse_progress.dart';
 import '../../domain/repositories/playhouse_repository.dart';
 import '../datasources/playhouse_datasource.dart';
-import '../models/playhouse_progress_model.dart';
 
 class PlayhouseRepositoryImpl implements PlayhouseRepository {
   final PlayhouseDatasource datasource;
@@ -15,22 +13,12 @@ class PlayhouseRepositoryImpl implements PlayhouseRepository {
   }
 
   @override
-  Future<void> markVideoCompleted(String videoId) async {
-    await datasource.markVideoCompleted(videoId);
+  Future<String?> getLastWatchedVideoId() async {
+    return await datasource.getLastWatchedVideoId();
   }
 
   @override
-  Future<void> addStars(int count) async {
-    await datasource.addStars(count);
-  }
-
-  @override
-  Future<PlayhouseProgress> getProgress() async {
-    return await datasource.getProgress();
-  }
-
-  @override
-  Future<void> saveProgress(PlayhouseProgress progress) async {
-    await datasource.saveProgress(progress as PlayhouseProgressModel);
+  Future<void> saveLastWatchedVideoId(String videoId) async {
+    await datasource.saveLastWatchedVideoId(videoId);
   }
 }
