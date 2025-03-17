@@ -29,12 +29,10 @@ class _PlayhousePlayingPageState extends State<PlayhousePlayingPage> {
     return VideoPlayerWidget(
       video: video,
       onComplete: () {
-        provider.completeVideo(video.id);
-        provider.clearSelectedVideo();
-        Navigator.of(context).pop();
+        // Play next video in queue
+        provider.playNextVideo();
       },
       onClose: () {
-        provider.clearSelectedVideo();
         Navigator.of(context).pop();
       },
     );
