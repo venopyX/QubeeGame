@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/video.dart';
 import '../providers/playhouse_provider.dart';
-import '../widgets/house_widget.dart';
-import '../widgets/village_progress_widget.dart';
+import '../widgets/video_card_widget.dart';
 import 'playhouse_playing_page.dart';
 
 class PlayhouseDashboardPage extends StatefulWidget {
@@ -14,6 +13,8 @@ class PlayhouseDashboardPage extends StatefulWidget {
 }
 
 class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
+  final TextEditingController _searchController = TextEditingController();
+  
   @override
   void initState() {
     super.initState();
@@ -21,6 +22,12 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PlayhouseProvider>().loadVideos();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -89,8 +96,8 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
     return CustomScrollView(
       slivers: [
         _buildAppBar(),
-        _buildVillageHeader(provider),
-        _buildHousesGrid(provider),
+        _buildSearchAndFilter(provider),
+        _buildVideosGrid(provider),
       ],
     );
   }
@@ -139,33 +146,102 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
     );
   }
 
-  Widget _buildVillageHeader(PlayhouseProvider provider) {
+  Widget _buildSearchAndFilter(PlayhouseProvider provider) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: VillageProgressWidget(
-          progress: provider.progress,
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Search field
+            TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search videos...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 12.0),
+              ),
+              onChanged: (value) {
+                provider.search(value);
+              },
+            ),
+            SizedBox(height: 16),
+            // Category filter chips
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  FilterChip(
+                    label: Text('All'),
+                    selected: provider.selectedCategory == null,
+                    onSelected: (_) {
+                      provider.selectCategory(null);
+                    },
+                  ),
+                  SizedBox(width: 8),
+                  ...provider.availableCategories.map((category) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: FilterChip(
+                        label: Text(category),
+                        selected: provider.selectedCategory == category,
+                        onSelected: (_) {
+                          provider.selectCategory(
+                            provider.selectedCategory == category ? null : category
+                          );
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildHousesGrid(PlayhouseProvider provider) {
+  Widget _buildVideosGrid(PlayhouseProvider provider) {
+    if (provider.videos.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.video_library, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
+              Text(
+                'No videos found',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Try adjusting your search or filters',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
     return SliverPadding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 0.85,
+          childAspectRatio: 0.75,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final video = provider.videos[index];
-            return HouseWidget(
+            return VideoCardWidget(
               video: video,
-              isCompleted: provider.isVideoCompleted(video.id),
               onTap: () {
                 _openVideo(context, provider, video);
               },
@@ -206,24 +282,19 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
               ),
               SizedBox(height: 8),
               Text(
-                'In this virtual village, you can explore different houses to '
-                'watch educational videos in Afan Oromo language.',
+                'This app features educational videos in Afan Oromo language. '
+                'Browse, search, and watch videos to learn Oromo language and culture.',
               ),
               SizedBox(height: 16),
               Text(
-                'How to Play:',
+                'Features:',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              Text('• Tap on unlocked houses to watch videos'),
-              Text('• Complete videos to earn stars'),
-              Text('• Play mini-games after videos for extra stars'),
-              Text('• Unlock more houses as you collect stars'),
-              SizedBox(height: 16),
-              Text(
-                'Learn Oromo language while having fun! Each house contains '
-                'songs, stories, or cultural content to help you learn.',
-              ),
+              Text('• Search for videos by title or description'),
+              Text('• Filter videos by category'),
+              Text('• Automatic playback of the next video in queue'),
+              Text('• Learn Oromo language and culture through engaging videos'),
             ],
           ),
         ),
