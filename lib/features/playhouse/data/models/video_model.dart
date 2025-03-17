@@ -8,7 +8,7 @@ class VideoModel extends Video {
     required super.videoId,
     required super.description,
     super.tags,
-    super.isUnlocked,
+    super.category,
   });
 
   factory VideoModel.fromJson(Map<String, dynamic> json) {
@@ -19,7 +19,7 @@ class VideoModel extends Video {
       videoId: json['videoId'] as String,
       description: json['description'] as String,
       tags: (json['tags'] as List?)?.map((e) => e as String).toList() ?? [],
-      isUnlocked: json['isUnlocked'] as bool? ?? false,
+      category: json['category'] as String?,
     );
   }
 
@@ -31,7 +31,7 @@ class VideoModel extends Video {
       'videoId': videoId,
       'description': description,
       'tags': tags,
-      'isUnlocked': isUnlocked,
+      'category': category,
     };
   }
 }
