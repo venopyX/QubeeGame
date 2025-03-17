@@ -12,9 +12,14 @@ class QubeeGameApp extends StatelessWidget {
     return MultiProvider(
       providers: providers,
       child: MaterialApp(
-        title: 'QubeeGame',
+        debugShowCheckedModeBanner: false,
+        title: 'QubeeGames',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.light,
+          ),
+          useMaterial3: true,
         ),
         home: const HomePage(), // Set home page
         onGenerateRoute: AppRoutes.generateRoute,
