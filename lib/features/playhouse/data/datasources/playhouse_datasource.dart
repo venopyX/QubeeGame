@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/video_model.dart';
-import '../models/playhouse_progress_model.dart';
 
 class PlayhouseDatasource {
-  static const String _progressKey = 'playhouse_progress';
-  
+  static const String _lastWatchedKey = 'last_watched_video_id';
+
   // For the MVP, we'll use hardcoded video data
   // In a real implementation, this would come from Firebase
   List<VideoModel> getVideosFromData() {
@@ -17,7 +15,7 @@ class PlayhouseDatasource {
         videoId: '-qSzGoPnZHc',
         description: 'Learn the Oromo alphabet through a catchy song',
         tags: ['song', 'alphabet', 'beginner'],
-        isUnlocked: true,
+        category: 'Basics',
       ),
       VideoModel(
         id: '2',
@@ -26,7 +24,7 @@ class PlayhouseDatasource {
         videoId: 'g3jCAyPai2Y', // Sample YouTube ID
         description: 'A classic Oromo folk tale about friendship',
         tags: ['story', 'animals', 'beginner'],
-        isUnlocked: true,
+        category: 'Stories',
       ),
       VideoModel(
         id: '3',
@@ -35,7 +33,7 @@ class PlayhouseDatasource {
         videoId: 'FTQbiNvZqaY', // Sample YouTube ID
         description: 'Learn how to count from 1 to 20 in Afan Oromo',
         tags: ['numbers', 'counting', 'beginner'],
-        isUnlocked: false,
+        category: 'Basics',
       ),
       VideoModel(
         id: '4',
@@ -44,7 +42,7 @@ class PlayhouseDatasource {
         videoId: 'JGwWNGJdvx8', // Sample YouTube ID
         description: 'Learn common colors in Afan Oromo',
         tags: ['colors', 'vocabulary', 'beginner'],
-        isUnlocked: false,
+        category: 'Basics',
       ),
       VideoModel(
         id: '5',
@@ -53,7 +51,7 @@ class PlayhouseDatasource {
         videoId: 'kJQP7kiw5Fk', // Sample YouTube ID
         description: 'Watch traditional Oromo dance performances',
         tags: ['culture', 'dance', 'intermediate'],
-        isUnlocked: false,
+        category: 'Culture',
       ),
       VideoModel(
         id: '6',
@@ -62,7 +60,7 @@ class PlayhouseDatasource {
         videoId: 'hT_nvWreIhg', // Sample YouTube ID
         description: 'Stories about Oromo cultural practices',
         tags: ['culture', 'story', 'advanced'],
-        isUnlocked: false,
+        category: 'Culture',
       ),
     ];
   }
@@ -73,65 +71,13 @@ class PlayhouseDatasource {
     return getVideosFromData();
   }
 
-  Future<PlayhouseProgressModel> getProgress() async {
+  Future<String?> getLastWatchedVideoId() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? progressJson = prefs.getString(_progressKey);
-    
-    if (progressJson == null) {
-      // Initial progress with first two videos unlocked
-      return PlayhouseProgressModel(
-        unlockedVideos: ['1', '2'],
-      );
-    }
-    
-    return PlayhouseProgressModel.fromJson(json.decode(progressJson));
+    return prefs.getString(_lastWatchedKey);
   }
 
-  Future<void> saveProgress(PlayhouseProgressModel progress) async {
+  Future<void> saveLastWatchedVideoId(String videoId) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_progressKey, json.encode(progress.toJson()));
-  }
-
-  Future<void> markVideoCompleted(String videoId) async {
-    final progress = await getProgress();
-    
-    if (!progress.completedVideos.contains(videoId)) {
-      var updatedProgress = PlayhouseProgressModel(
-        starsCollected: progress.starsCollected + 1, // Award 1 star for completing a video
-        level: progress.level,
-        completedVideos: [...progress.completedVideos, videoId],
-        unlockedVideos: progress.unlockedVideos,
-      );
-      
-      // Check if we should unlock a new video
-      if (updatedProgress.starsCollected % 3 == 0) {
-        // Unlock next video based on current completed count
-        final allVideos = getVideosFromData();
-        for (final video in allVideos) {
-          if (!updatedProgress.unlockedVideos.contains(video.id)) {
-            updatedProgress = PlayhouseProgressModel(
-              starsCollected: updatedProgress.starsCollected,
-              level: updatedProgress.level,
-              completedVideos: updatedProgress.completedVideos,
-              unlockedVideos: [...updatedProgress.unlockedVideos, video.id],
-            );
-            break;
-          }
-        }
-      }
-      
-      await saveProgress(updatedProgress);
-    }
-  }
-
-  Future<void> addStars(int count) async {
-    final progress = await getProgress();
-    final updatedProgress = PlayhouseProgressModel(
-      starsCollected: progress.starsCollected + count,
-      level: progress.level,
-      completedVideos: progress.completedVideos,
-      unlockedVideos: progress.unlockedVideos,
-    );
-    await saveProgress(updatedProgress);
+    await prefs.setString(_lastWatchedKey, videoId);
   }
 }
