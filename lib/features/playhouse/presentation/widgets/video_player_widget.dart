@@ -83,7 +83,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       if (!_isFinished) {
         setState(() {
           _isFinished = true;
-          _showControls = true;
+        });
+        // Automatically move to the next video after a short delay
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            widget.onComplete();
+          }
         });
       }
     }
@@ -95,7 +100,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       if (!_isFinished) {
         setState(() {
           _isFinished = true;
-          _showControls = true;
+        });
+        // Automatically move to the next video after a short delay
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            widget.onComplete();
+          }
         });
       }
     }
@@ -136,7 +146,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             Center(
               child: _isInitialized
                   ? GestureDetector(
-                      onTap: _toggleControls, // Correct reference to _toggleControls
+                      onTap: _toggleControls,
                       child: kIsWeb
                           ? web.YoutubePlayer(
                               controller: _controller,
@@ -145,7 +155,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                           : mobile.YoutubePlayer(
                               controller: _controller,
                               showVideoProgressIndicator: true,
-                              progressIndicatorColor: Colors.blue,
                               progressColors: const mobile.ProgressBarColors(
                                 playedColor: Colors.blue,
                                 handleColor: Colors.blueAccent,
@@ -154,10 +163,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                     )
                   : const Center(child: CircularProgressIndicator()),
             ),
+            
             if (_showControls)
               Positioned.fill(
                 child: GestureDetector(
-                  onTap: _toggleControls, // Correct reference to _toggleControls
+                  onTap: _toggleControls,
                   child: Container(
                     color: Colors.black.withAlpha((0.4 * 255).toInt()),
                     child: Column(
@@ -204,29 +214,19 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                           onPressed: _togglePlayPause,
                         ),
                         const Spacer(),
+                        if (_isFinished)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0),
+                            child: Text(
+                              "Playing next video shortly...",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
-                  ),
-                ),
-              ),
-            if (_isFinished)
-              Positioned(
-                bottom: 32,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.check_circle),
-                    label: const Text("I've Watched It!"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                    ),
-                    onPressed: widget.onComplete,
                   ),
                 ),
               ),
