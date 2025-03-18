@@ -1,225 +1,117 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../domain/entities/qubee.dart';
-import '../../domain/entities/land.dart';
 import '../../domain/entities/treasure.dart';
-import '../../domain/usecases/get_qubee_letters.dart';
-import '../../domain/usecases/get_lands.dart';
-import '../../data/models/qubee_model.dart';  // Add this import
-import '../../data/models/land_model.dart';   // Add this import
+import '../../data/datasources/qubee_letter_generator.dart';
 
-class QubeeQuestProvider with ChangeNotifier {
-  final GetQubeeLetters _getQubeeLetters;
-  final GetLands _getLands;
-  final AudioPlayer _audioPlayer = AudioPlayer();
-
+class QubeeQuestProvider extends ChangeNotifier {
+  // State variables
   List<Qubee> _letters = [];
-  List<Land> _lands = [];
   List<Treasure> _treasures = [];
-  
   Qubee? _currentLetter;
-  Land? _currentLand;
-
   int _points = 0;
-  bool _isLoading = false;
-  bool _isTracingActive = false;
-  bool _hasCompletedTracing = false;
-
-  QubeeQuestProvider(this._getQubeeLetters, this._getLands) {
-    _initializeGame();
+  bool _audioEnabled = true;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  
+  // Getters
+  List<Qubee> get letters => _letters;
+  List<Treasure> get treasures => _treasures;
+  Qubee? get currentLetter => _currentLetter;
+  int get points => _points;
+  bool get audioEnabled => _audioEnabled;
+  
+  // Constructor
+  QubeeQuestProvider() {
+    _initializeData();
   }
 
-  List<Qubee> get letters => _letters;
-  List<Land> get lands => _lands;
-  List<Treasure> get treasures => _treasures;
-  List<Treasure> get collectedTreasures => _treasures.where((t) => t.isCollected).toList();
-
-  Qubee? get currentLetter => _currentLetter;
-  Land? get currentLand => _currentLand;
-  
-  int get points => _points;
-  bool get isLoading => _isLoading;
-  bool get isTracingActive => _isTracingActive;
-  bool get hasCompletedTracing => _hasCompletedTracing;
-
-  Future<void> _initializeGame() async {
-    _isLoading = true;
-    notifyListeners();
-
+  // Load data
+  Future<void> _initializeData() async {
     try {
-      // Load letters and lands
-      _letters = await _getQubeeLetters();
-      _lands = await _getLands();
-
-      // Update unlocked status based on points
-      _updateUnlockStatus();
-
-      // Initialize treasures based on letters
-      _initializeTreasures();
+      // In a real app, you'd load from a repository or API
+      // For now, we'll use the mock data
+      _letters = QubeeLetterGenerator.generateBasicLetters();
       
-      // Set initial land and letter
-      _setInitialLandAndLetter();
+      // Initialize treasures (one for each letter)
+      _treasures = _letters.map((letter) => 
+        Treasure(
+          id: letter.id,
+          qubeeLetterId: letter.id,
+          word: letter.unlockedWords.isNotEmpty ? letter.unlockedWords.first : '',
+          exampleSentence: letter.exampleSentence,
+          meaningOfSentence: letter.meaningOfSentence,
+          isCollected: false,
+        )
+      ).toList();
       
+      // Set initial letter (first unlocked one)
+      _currentLetter = _letters.firstWhere((letter) => letter.isUnlocked);
+
+      notifyListeners();
     } catch (e) {
-      debugPrint('Error initializing game: $e');
-    } finally {
-      _isLoading = false;
+      debugPrint('Error initializing data: $e');
+    }
+  }
+
+  // Select a letter
+  void selectLetter(int letterId) {
+    final letter = _letters.firstWhereOrNull((l) => l.id == letterId);
+    if (letter != null && letter.isUnlocked) {
+      _currentLetter = letter;
       notifyListeners();
     }
   }
 
-  void _updateUnlockStatus() {
-    // Update lands unlock status
-    for (var land in _lands) {
-      land.isUnlocked = land.requiredPoints <= _points;
-    }
-
-    // Update letters unlock status
-    for (var letter in _letters) {
-      letter.isUnlocked = letter.requiredPoints <= _points;
-    }
-  }
-
-  void _initializeTreasures() {
-    _treasures = [];
-    int id = 1;
+  // Mark letter as completed
+  void completeCurrentLetter(double accuracy) {
+    if (_currentLetter == null) return;
     
-    for (var letter in _letters) {
-      for (var word in letter.unlockedWords) {
-        _treasures.add(
-          Treasure(
-            id: id++,
-            word: word,
-            meaning: 'Meaning of $word', // In a real app, this would be loaded from data
-            imagePath: 'assets/images/treasures/${word.toLowerCase()}.png',
-            qubeeLetterId: letter.id,
-            isCollected: false,
-          ),
-        );
-      }
-    }
-  }
-
-  void _setInitialLandAndLetter() {
-    // Set first unlocked land as current
-    _currentLand = _lands.firstWhere(
-      (land) => land.isUnlocked, 
-      orElse: () => _lands.isNotEmpty ? _lands.first : LandModel( // Fix: Return LandModel instead of Land
-        id: 0,
-        name: "Default Land",
-        description: "Default land description",
-        imagePath: "",
-        letterIds: [],
-        isUnlocked: true,
-        requiredPoints: 0,
-      ),
-    );
-    
-    // Set first letter of the current land as current letter
-    if (_currentLand != null && _currentLand!.letterIds.isNotEmpty) {
-      final firstLetterId = _currentLand!.letterIds.first;
-      _currentLetter = _letters.firstWhere(
-        (letter) => letter.id == firstLetterId,
-        orElse: () => _letters.isNotEmpty ? _letters.first : QubeeModel( // Fix: Return QubeeModel instead of Qubee
-          id: 0,
-          letter: "A",
-          pronunciation: "Ah",
-          soundPath: "",
-          tracingPoints: [],
-          unlockedWords: [],
-          requiredPoints: 0,
-        ),
-      );
-    }
-  }
-
-  // Select a land and update current letter
-  void selectLand(Land land) {
-    if (!land.isUnlocked) return;
-    
-    _currentLand = land;
-    
-    // Select first letter in the land that is not completed yet
-    if (land.letterIds.isNotEmpty) {
-      final uncompletedLetterIds = land.letterIds.where((id) {
-        final letter = _letters.firstWhere(
-          (l) => l.id == id,
-          orElse: () => QubeeModel( // Fix: Return QubeeModel instead of Qubee
-            id: 0,
-            letter: "A",
-            pronunciation: "Ah",
-            soundPath: "",
-            tracingPoints: [],
-            unlockedWords: [],
-            requiredPoints: 0,
-          ),
-        );
-        return !letter.isCompleted;
-      }).toList();
+    final index = _letters.indexWhere((l) => l.id == _currentLetter!.id);
+    if (index >= 0) {
+      _letters[index].isCompleted = true;
+      _letters[index].tracingAccuracy = accuracy;
+      _letters[index].practiceCount++;
       
-      if (uncompletedLetterIds.isNotEmpty) {
-        final firstLetterId = uncompletedLetterIds.first;
-        _currentLetter = _letters.firstWhere(
-          (letter) => letter.id == firstLetterId,
-          orElse: () => QubeeModel( // Fix: Return QubeeModel instead of Qubee
-            id: 0,
-            letter: "A",
-            pronunciation: "Ah",
-            soundPath: "",
-            tracingPoints: [],
-            unlockedWords: [],
-            requiredPoints: 0,
-          ),
-        );
-      } else {
-        // If all completed, just select the first letter
-        _currentLetter = _letters.firstWhere(
-          (letter) => letter.id == land.letterIds.first,
-          orElse: () => QubeeModel( // Fix: Return QubeeModel instead of Qubee
-            id: 0,
-            letter: "A",
-            pronunciation: "Ah",
-            soundPath: "",
-            tracingPoints: [],
-            unlockedWords: [],
-            requiredPoints: 0,
-          ),
-        );
-      }
-    }
-    
-    notifyListeners();
-  }
-
-  // Select a specific letter
-  void selectLetter(Qubee letter) {
-    if (!letter.isUnlocked) return;
-    _currentLetter = letter;
-    notifyListeners();
-  }
-
-  // Start letter tracing mode
-  void startTracing() {
-    _isTracingActive = true;
-    _hasCompletedTracing = false;
-    notifyListeners();
-  }
-
-  // Complete letter tracing
-  void completeTracing() {
-    if (_currentLetter != null && !_currentLetter!.isCompleted) {
-      _currentLetter!.isCompleted = true;
-      _hasCompletedTracing = true;
-      _addPoints(10); // Add points for completing tracing
+      // Add points
+      _addPoints(10);
       
-      // Collect treasures related to this letter
+      // Collect treasure for this letter
       _collectTreasures(_currentLetter!.id);
+      
+      // Unlock next letter if available
+      _unlockNextLetter();
+      
+      notifyListeners();
     }
-    
-    _isTracingActive = false;
-    notifyListeners();
   }
-
+  
+  // Unlock next letter
+  void _unlockNextLetter() {
+    if (_currentLetter == null) return;
+    
+    // Find current letter index
+    final currentIndex = _letters.indexWhere((l) => l.id == _currentLetter!.id);
+    if (currentIndex >= 0 && currentIndex < _letters.length - 1) {
+      // Check next letter
+      final nextLetter = _letters[currentIndex + 1];
+      // If enough points and not already unlocked
+      if (!nextLetter.isUnlocked && _points >= nextLetter.requiredPoints) {
+        _letters[currentIndex + 1].isUnlocked = true;
+      }
+    }
+  }
+  
+  // Update unlock status based on points
+  void _updateUnlockStatus() {
+    for (int i = 0; i < _letters.length; i++) {
+      if (!_letters[i].isUnlocked && _points >= _letters[i].requiredPoints) {
+        _letters[i].isUnlocked = true;
+      }
+    }
+  }
+  
   // Add points and update unlock status
   void _addPoints(int amount) {
     _points += amount;
@@ -229,16 +121,22 @@ class QubeeQuestProvider with ChangeNotifier {
 
   // Collect treasures related to a letter
   void _collectTreasures(int letterId) {
-    for (var treasure in _treasures) {
-      if (treasure.qubeeLetterId == letterId && !treasure.isCollected) {
-        treasure.isCollected = true;
+    for (var i = 0; i < _treasures.length; i++) {
+      if (_treasures[i].qubeeLetterId == letterId && !_treasures[i].isCollected) {
+        _treasures[i].isCollected = true;
       }
     }
   }
 
+  // Toggle audio
+  void toggleAudio() {
+    _audioEnabled = !_audioEnabled;
+    notifyListeners();
+  }
+
   // Play letter sound
   Future<void> playLetterSound() async {
-    if (_currentLetter == null) return;
+    if (_currentLetter == null || !_audioEnabled) return;
     
     try {
       await _audioPlayer.setAsset(_currentLetter!.soundPath);
@@ -247,10 +145,39 @@ class QubeeQuestProvider with ChangeNotifier {
       debugPrint('Error playing sound: $e');
     }
   }
+  
+  // Play sound effect
+  Future<void> playSound(String assetPath) async {
+    if (!_audioEnabled) return;
+    
+    try {
+      await _audioPlayer.setAsset(assetPath);
+      await _audioPlayer.play();
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+      // Use system sounds as fallback
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  // Get treasure for a letter
+  Treasure? getTreasureForLetter(int letterId) {
+    return _treasures.firstWhereOrNull((t) => t.qubeeLetterId == letterId && t.isCollected);
+  }
 
   @override
   void dispose() {
     _audioPlayer.dispose();
     super.dispose();
+  }
+}
+
+// Helper extension to get firstWhereOrNull functionality
+extension FirstWhereExt<T> on Iterable<T> {
+  T? firstWhereOrNull(bool Function(T) test) {
+    for (var element in this) {
+      if (test(element)) return element;
+    }
+    return null;
   }
 }
