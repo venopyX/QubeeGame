@@ -13,6 +13,7 @@ class QubeeQuestProvider extends ChangeNotifier {
   Qubee? _currentLetter;
   int _points = 0;
   bool _audioEnabled = true;
+  bool _showAudioError = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
   
   // Getters
@@ -21,6 +22,7 @@ class QubeeQuestProvider extends ChangeNotifier {
   Qubee? get currentLetter => _currentLetter;
   int get points => _points;
   bool get audioEnabled => _audioEnabled;
+  bool get showAudioError => _showAudioError;
   
   // Constructor
   QubeeQuestProvider() {
@@ -31,7 +33,6 @@ class QubeeQuestProvider extends ChangeNotifier {
   Future<void> _initializeData() async {
     try {
       // In a real app, you'd load from a repository or API
-      // For now, we'll use the mock data
       _letters = QubeeLetterGenerator.generateBasicLetters();
       
       // Initialize treasures (one for each letter)
@@ -46,8 +47,11 @@ class QubeeQuestProvider extends ChangeNotifier {
         )
       ).toList();
       
+      // Fix: Update which letters should be unlocked based on initial points
+      _updateUnlockStatus();
+      
       // Set initial letter (first unlocked one)
-      _currentLetter = _letters.firstWhere((letter) => letter.isUnlocked);
+      _currentLetter = _letters.firstWhereOrNull((letter) => letter.isUnlocked);
 
       notifyListeners();
     } catch (e) {
@@ -74,8 +78,9 @@ class QubeeQuestProvider extends ChangeNotifier {
       _letters[index].tracingAccuracy = accuracy;
       _letters[index].practiceCount++;
       
-      // Add points
-      _addPoints(10);
+      // Add points - points earned are proportional to accuracy
+      int earnedPoints = (10 * accuracy).ceil();
+      _addPoints(earnedPoints);
       
       // Collect treasure for this letter
       _collectTreasures(_currentLetter!.id);
@@ -103,7 +108,7 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
   
-  // Update unlock status based on points
+  // Update unlock status based on points - Fixed to work properly
   void _updateUnlockStatus() {
     for (int i = 0; i < _letters.length; i++) {
       if (!_letters[i].isUnlocked && _points >= _letters[i].requiredPoints) {
@@ -134,19 +139,40 @@ class QubeeQuestProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Play letter sound
+  // Play letter sound with improved error handling
   Future<void> playLetterSound() async {
     if (_currentLetter == null || !_audioEnabled) return;
     
     try {
       await _audioPlayer.setAsset(_currentLetter!.soundPath);
       await _audioPlayer.play();
+      
+      // Reset error state in case of previous error
+      if (_showAudioError) {
+        _showAudioError = false;
+        notifyListeners();
+      }
     } catch (e) {
       debugPrint('Error playing sound: $e');
+      
+      // Visual feedback for audio errors
+      _showAudioError = true;
+      notifyListeners();
+      
+      // Hide error message after a delay
+      Future.delayed(const Duration(seconds: 3), () {
+        if (_showAudioError) {
+          _showAudioError = false;
+          notifyListeners();
+        }
+      });
+      
+      // Use system haptic feedback as fallback
+      HapticFeedback.mediumImpact();
     }
   }
   
-  // Play sound effect
+  // Play sound effect with improved error handling
   Future<void> playSound(String assetPath) async {
     if (!_audioEnabled) return;
     
@@ -155,7 +181,20 @@ class QubeeQuestProvider extends ChangeNotifier {
       await _audioPlayer.play();
     } catch (e) {
       debugPrint('Error playing sound: $e');
-      // Use system sounds as fallback
+      
+      // Visual feedback for audio errors
+      _showAudioError = true;
+      notifyListeners();
+      
+      // Hide error message after a delay
+      Future.delayed(const Duration(seconds: 3), () {
+        if (_showAudioError) {
+          _showAudioError = false;
+          notifyListeners();
+        }
+      });
+      
+      // Use system haptic feedback as fallback
       HapticFeedback.mediumImpact();
     }
   }
@@ -164,6 +203,15 @@ class QubeeQuestProvider extends ChangeNotifier {
   Treasure? getTreasureForLetter(int letterId) {
     return _treasures.firstWhereOrNull((t) => t.qubeeLetterId == letterId && t.isCollected);
   }
+  
+  // Get letter progress percentage across all letters
+  double get overallProgress {
+    if (_letters.isEmpty) return 0.0;
+    return _letters.where((l) => l.isCompleted).length / _letters.length;
+  }
+  
+  // Get unlocked letter count
+  int get unlockedLetterCount => _letters.where((l) => l.isUnlocked).length;
 
   @override
   void dispose() {
