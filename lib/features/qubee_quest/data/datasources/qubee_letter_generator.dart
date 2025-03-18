@@ -33,7 +33,7 @@ class QubeeLetterGenerator {
         exampleSentence: 'Tolaan baaduudhaan nyaachaa jira.',
         meaningOfSentence: 'Tola is eating with cheese.',
         requiredPoints: 10,
-        isUnlocked: true,
+        isUnlocked: false,
       ),
       
       // Letter C
