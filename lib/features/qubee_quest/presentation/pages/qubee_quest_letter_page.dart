@@ -5,233 +5,277 @@ import '../widgets/letter_tracing_widget.dart';
 import '../widgets/celebration_overlay.dart';
 
 class QubeeQuestLetterPage extends StatefulWidget {
-  const QubeeQuestLetterPage({super.key});
+  final int letterId;
+  
+  const QubeeQuestLetterPage({
+    required this.letterId,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<QubeeQuestLetterPage> createState() => _QubeeQuestLetterPageState();
 }
 
 class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-
+  bool _showCelebration = false;
+  double _accuracy = 0.0;
+  late AnimationController _celebrationController;
+  
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    );
-
-    // Play letter sound when the page opens
+    // Select the current letter
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<QubeeQuestProvider>().playLetterSound();
+      final provider = Provider.of<QubeeQuestProvider>(context, listen: false);
+      provider.selectLetter(widget.letterId);
+      
+      // Play letter sound
+      provider.playLetterSound();
     });
+    
+    _celebrationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
   }
-
+  
   @override
   void dispose() {
-    _animationController.dispose();
+    _celebrationController.dispose();
     super.dispose();
+  }
+
+  void _handleLetterCompleted() {
+    final provider = Provider.of<QubeeQuestProvider>(context, listen: false);
+    provider.completeCurrentLetter(_accuracy);
+    
+    // Play success sound
+    provider.playSound('assets/audio/success.mp3');
+    
+    setState(() {
+      _showCelebration = true;
+    });
+  }
+  
+  void _handleAccuracyChanged(double accuracy) {
+    _accuracy = accuracy;
+  }
+  
+  void _handleCelebrationDone() {
+    if (mounted) {
+      Navigator.of(context).pop(); // Return to the map
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Consumer<QubeeQuestProvider>(
-        builder: (context, provider, _) {
-          if (provider.currentLetter == null) {
-            return const Center(child: Text('No letter selected'));
-          }
-
-          final letter = provider.currentLetter!;
-
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              // Background
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.blue[50]!,
-                      Colors.blue[100]!,
-                    ],
-                  ),
+    return Consumer<QubeeQuestProvider>(
+      builder: (context, provider, _) {
+        final currentLetter = provider.currentLetter;
+        
+        if (currentLetter == null) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        
+        // Get treasure for this letter
+        final treasure = provider.getTreasureForLetter(currentLetter.id);
+        final treasureWord = treasure?.word;
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Learn Letter ${currentLetter.latinEquivalent}'),
+            actions: [
+              IconButton(
+                icon: Icon(
+                  provider.audioEnabled ? Icons.volume_up : Icons.volume_off,
                 ),
+                onPressed: provider.toggleAudio,
               ),
-
-              // Main content
-              SafeArea(
-                child: Column(
-                  children: [
-                    // App bar
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.arrow_back, color: Colors.blue[700]),
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
-                          Expanded(
-                            child: Text(
-                              'Letter ${letter.letter}',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue[700],
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.volume_up, color: Colors.blue[700]),
-                            onPressed: () => provider.playLetterSound(),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Letter display and pronunciation
-                    Container(
-                      margin: const EdgeInsets.all(16),
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            letter.letter,
-                            style: const TextStyle(
-                              fontSize: 120,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Pronunciation: "${letter.pronunciation}"',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Instructions
-                    Text(
-                      provider.isTracingActive
-                          ? 'Trace the letter by following the path'
-                          : 'Tap the button below to start tracing',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Tracing area or start button
-                    Expanded(
-                      child: provider.isTracingActive
-                          ? LetterTracingWidget(
-                              letter: letter,
-                              onCompleted: () {
-                                provider.completeTracing();
-                                _animationController.forward(from: 0.0);
-                              },
-                            )
-                          : Center(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 16,
-                                  ),
-                                  backgroundColor: Colors.blue[600],
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                ),
-                                onPressed: () => provider.startTracing(),
-                                child: Text(
-                                  letter.isCompleted ? 'Trace Again' : 'Start Tracing',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                    ),
-
-                    // Words that use this letter
-                    if (!provider.isTracingActive && letter.unlockedWords.isNotEmpty)
+            ],
+          ),
+          // Use a SafeArea wrapped SingleChildScrollView for scrollable content
+          body: SafeArea(
+            child: Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Letter information header
                       Container(
-                        margin: const EdgeInsets.all(16),
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.amber[50],
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.amber[200]!),
-                        ),
-                        child: Column(
+                        color: Colors.blue[50],
+                        child: Row(
                           children: [
-                            Text(
-                              'Words with ${letter.letter}:',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                            // Letter display - now with uppercase and lowercase
+                            Container(
+                              width: 100,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.blue.withAlpha(40),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    currentLetter.letter, // Uppercase
+                                    style: const TextStyle(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    currentLetter.smallLetter, // Lowercase
+                                    style: const TextStyle(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              children: letter.unlockedWords
-                                  .map(
-                                    (word) => Chip(
-                                      label: Text(word),
-                                      backgroundColor: Colors.white,
+                            const SizedBox(width: 16),
+                            
+                            // Letter information
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${currentLetter.letter} (Capital)',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  )
-                                  .toList(),
+                                  ),
+                                  Text(
+                                    '${currentLetter.smallLetter} (Small)',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Pronunciation: ${currentLetter.pronunciation}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[700],
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                  ],
-                ),
-              ),
 
-              // Success celebration overlay
-              if (provider.hasCompletedTracing)
-                CelebrationOverlay(
-                  controller: _animationController,
-                  onDone: () {
-                    Navigator.of(context).pop();
-                  },
-                  treasureWord: letter.unlockedWords.isNotEmpty
-                      ? letter.unlockedWords.first
-                      : null,
+                      // Instructions
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        color: Colors.amber[50],
+                        child: const Row(
+                          children: [
+                            Icon(Icons.info_outline, color: Colors.amber),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Trace the letter by following the blue path. Try to stay on the path for better accuracy!',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Example word
+                      if (currentLetter.unlockedWords.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                          color: Colors.green[50],
+                          child: Row(
+                            children: [
+                              Icon(Icons.bookmark, color: Colors.green[700]),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Example word: ${currentLetter.unlockedWords.first}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green[800],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      // Main letter tracing widget - explicitly sized with a fixed height
+                      SizedBox(
+                        height: 450, // Give it plenty of explicit height
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: LetterTracingWidget(
+                            letter: currentLetter,
+                            onAccuracyChanged: _handleAccuracyChanged,
+                            onCompleted: _handleLetterCompleted,
+                          ),
+                        ),
+                      ),
+                      
+                      // Listen to pronunciation button
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ElevatedButton.icon(
+                          onPressed: provider.playLetterSound,
+                          icon: const Icon(Icons.volume_up),
+                          label: const Text('Listen to pronunciation'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 24,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-            ],
-          );
-        },
-      ),
+                
+                // Celebration overlay when letter is completed
+                if (_showCelebration)
+                  CelebrationOverlay(
+                    controller: _celebrationController,
+                    onDone: _handleCelebrationDone,
+                    treasureWord: treasureWord,
+                    letterCompleted: currentLetter.letter,
+                    latinEquivalent: currentLetter.latinEquivalent,
+                    accuracy: _accuracy,
+                    exampleSentence: currentLetter.exampleSentence,
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
