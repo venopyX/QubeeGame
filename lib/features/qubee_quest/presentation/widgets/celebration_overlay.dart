@@ -37,19 +37,21 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 5));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 5),
+    );
     _confettiController.play();
 
     _fadeAnimation = CurvedAnimation(
       parent: widget.controller,
       curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
     );
-    
+
     _scaleAnimation = CurvedAnimation(
       parent: widget.controller,
       curve: const Interval(0.2, 0.7, curve: Curves.elasticOut),
     );
-    
+
     _rotateAnimation = CurvedAnimation(
       parent: widget.controller,
       curve: const Interval(0.1, 0.5, curve: Curves.easeInOut),
@@ -64,10 +66,10 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
     _confettiController.dispose();
     super.dispose();
   }
-  
+
   String _getAccuracyMessage() {
     final accuracy = widget.accuracy;
-    
+
     if (accuracy >= 0.95) return 'Perfect!';
     if (accuracy >= 0.90) return 'Excellent!';
     if (accuracy >= 0.80) return 'Great job!';
@@ -75,11 +77,11 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
     if (accuracy >= 0.50) return 'Good effort!';
     return 'Keep practicing!';
   }
-  
+
   Color _getAccuracyColor() {
     final accuracy = widget.accuracy;
-    
-    if (accuracy >= 0.90) return Colors.green;
+
+    if (accuracy >= 0.90) return Colors.green[900]!;
     if (accuracy >= 0.80) return Colors.green[700]!;
     if (accuracy >= 0.70) return Colors.lightGreen;
     if (accuracy >= 0.50) return Colors.amber;
@@ -96,9 +98,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
           // Semi-transparent background with blur effect
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: Container(
-              color: Colors.black.withAlpha(179),
-            ),
+            child: Container(color: Colors.black.withAlpha(179)),
           ),
 
           // Multiple confetti effects from different angles
@@ -124,7 +124,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
               ],
             ),
           ),
-          
+
           // Additional confetti from corners
           Align(
             alignment: Alignment.topLeft,
@@ -139,7 +139,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
               colors: const [Colors.red, Colors.purple, Colors.pink],
             ),
           ),
-          
+
           Align(
             alignment: Alignment.topRight,
             child: ConfettiWidget(
@@ -182,7 +182,9 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                         animation: widget.controller,
                         builder: (context, child) {
                           return Transform.scale(
-                            scale: 1.0 + (0.1 * sin(widget.controller.value * 6 * pi)),
+                            scale:
+                                1.0 +
+                                (0.1 * sin(widget.controller.value * 6 * pi)),
                             child: Container(
                               height: 120,
                               decoration: BoxDecoration(
@@ -207,9 +209,9 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                           );
                         },
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Success message
                       Text(
                         _getAccuracyMessage(),
@@ -219,9 +221,9 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                           color: _getAccuracyColor(),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       // Letter info
                       Text(
                         'You mastered the letter ${widget.letterCompleted}!',
@@ -231,12 +233,15 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       // Accuracy display with improved visualization
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.blue[50],
                           borderRadius: BorderRadius.circular(16),
@@ -262,9 +267,9 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 20),
-                      
+
                       // Treasure unlocked (if available)
                       if (widget.treasureWord != null)
                         Container(
@@ -296,7 +301,10 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                                   ShaderMask(
                                     shaderCallback: (Rect bounds) {
                                       return LinearGradient(
-                                        colors: [Colors.amber[800]!, Colors.orange],
+                                        colors: [
+                                          Colors.amber[800]!,
+                                          Colors.orange,
+                                        ],
                                       ).createShader(bounds);
                                     },
                                     child: Text(
@@ -312,16 +320,26 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                               ),
                               const SizedBox(height: 12),
                               AnimatedBuilder(
-                                animation: widget.controller, 
+                                animation: widget.controller,
                                 builder: (context, child) {
                                   return Transform.scale(
-                                    scale: 1.0 + (0.05 * sin(widget.controller.value * 4 * pi)),
+                                    scale:
+                                        1.0 +
+                                        (0.05 *
+                                            sin(
+                                              widget.controller.value * 4 * pi,
+                                            )),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: Colors.amber[200]!),
+                                        border: Border.all(
+                                          color: Colors.amber[200]!,
+                                        ),
                                         boxShadow: [
                                           BoxShadow(
                                             color: Colors.amber.withAlpha(100),
@@ -342,7 +360,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                                   );
                                 },
                               ),
-                              
+
                               // Example sentence
                               if (widget.exampleSentence != null)
                                 Padding(
@@ -360,7 +378,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                             ],
                           ),
                         ),
-                      
+
                       // Continue button
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(

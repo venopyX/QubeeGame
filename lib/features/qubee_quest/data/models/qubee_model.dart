@@ -2,34 +2,20 @@ import '../../domain/entities/qubee.dart';
 
 class QubeeModel extends Qubee {
   QubeeModel({
-    required int id,
-    required String letter,
-    required String smallLetter,
-    required String latinEquivalent,
-    required String pronunciation,
-    required String soundPath,
-    required List<Map<String, double>> tracingPoints,
-    required List<String> unlockedWords,
-    required String exampleSentence,
-    required String meaningOfSentence,
-    required int requiredPoints,
-    bool isUnlocked = false,
-    bool isCompleted = false,
-  }) : super(
-          id: id,
-          letter: letter,
-          smallLetter: smallLetter,
-          latinEquivalent: latinEquivalent,
-          pronunciation: pronunciation,
-          soundPath: soundPath,
-          tracingPoints: tracingPoints,
-          unlockedWords: unlockedWords,
-          exampleSentence: exampleSentence,
-          meaningOfSentence: meaningOfSentence,
-          requiredPoints: requiredPoints,
-          isUnlocked: isUnlocked,
-          isCompleted: isCompleted,
-        );
+    required super.id,
+    required super.letter,
+    required super.smallLetter,
+    required super.latinEquivalent,
+    required super.pronunciation,
+    required super.soundPath,
+    required super.tracingPoints,
+    required super.unlockedWords,
+    required super.exampleSentence,
+    required super.meaningOfSentence,
+    required super.requiredPoints,
+    super.isUnlocked,
+    super.isCompleted,
+  });
 
   factory QubeeModel.fromJson(Map<String, dynamic> json) {
     return QubeeModel(
