@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import '../../domain/entities/qubee.dart';
@@ -407,30 +408,42 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
           ),
           child: Column(
             children: [
-              Container(
-                height: constraints.maxHeight - 160,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                ),
-                child: GestureDetector(
-                  onPanStart: _handlePanStart,
-                  onPanUpdate: _handlePanUpdate,
-                  onPanEnd: _handlePanEnd,
-                  child: CustomPaint(
-                    painter: LetterTracePainter(
-                      guidePoints: _guidePoints,
-                      userPoints: _userPoints,
-                      userStrokes: _userStrokes,
-                      currentStroke: _currentStroke,
-                      showGuide: _showGuide,
-                      pulseValue: _pulseAnimation.value,
-                      currentSegment: _currentSegment,
+              NotificationListener<ScrollNotification>(
+                onNotification: (_) => true,
+                child: Container(
+                  height: constraints.maxHeight - 160,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
                     ),
-                    size: size,
+                  ),
+                  child: RawGestureDetector(
+                    // Use RawGestureDetector for more control
+                    gestures: <Type, GestureRecognizerFactory>{
+                      PanGestureRecognizer: GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
+                        () => PanGestureRecognizer(),
+                        (PanGestureRecognizer instance) {
+                          instance.onStart = _handlePanStart;
+                          instance.onUpdate = _handlePanUpdate;
+                          instance.onEnd = _handlePanEnd;
+                        },
+                      ),
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: CustomPaint(
+                      painter: LetterTracePainter(
+                        guidePoints: _guidePoints,
+                        userPoints: _userPoints,
+                        userStrokes: _userStrokes,
+                        currentStroke: _currentStroke,
+                        showGuide: _showGuide,
+                        pulseValue: _pulseAnimation.value,
+                        currentSegment: _currentSegment,
+                      ),
+                      size: size,
+                    ),
                   ),
                 ),
               ),

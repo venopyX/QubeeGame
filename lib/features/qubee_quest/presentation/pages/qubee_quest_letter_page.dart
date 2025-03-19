@@ -333,12 +333,16 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage>
 
                       SizedBox(
                         height: 450,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: LetterTracingWidget(
-                            letter: currentLetter,
-                            onAccuracyChanged: _handleAccuracyChanged,
-                            onCompleted: _handleLetterCompleted,
+                        child: NotificationListener<ScrollNotification>(
+                          // This prevents scroll events from bubbling up to parent scrollables
+                          onNotification: (_) => true,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: LetterTracingWidget(
+                              letter: currentLetter,
+                              onAccuracyChanged: _handleAccuracyChanged,
+                              onCompleted: _handleLetterCompleted,
+                            ),
                           ),
                         ),
                       ),
