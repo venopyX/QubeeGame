@@ -15,7 +15,7 @@ class QubeeQuestProvider extends ChangeNotifier {
   bool _audioEnabled = true;
   bool _showAudioError = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   // Getters
   List<Qubee> get letters => _letters;
   List<Treasure> get treasures => _treasures;
@@ -23,7 +23,7 @@ class QubeeQuestProvider extends ChangeNotifier {
   int get points => _points;
   bool get audioEnabled => _audioEnabled;
   bool get showAudioError => _showAudioError;
-  
+
   // Constructor
   QubeeQuestProvider() {
     _initializeData();
@@ -32,25 +32,27 @@ class QubeeQuestProvider extends ChangeNotifier {
   // Load data
   Future<void> _initializeData() async {
     try {
-      // In a real app, you'd load from a repository or API
       _letters = QubeeLetterGenerator.generateBasicLetters();
-      
-      // Initialize treasures (one for each letter)
-      _treasures = _letters.map((letter) => 
-        Treasure(
-          id: letter.id,
-          qubeeLetterId: letter.id,
-          word: letter.unlockedWords.isNotEmpty ? letter.unlockedWords.first : '',
-          exampleSentence: letter.exampleSentence,
-          meaningOfSentence: letter.meaningOfSentence,
-          isCollected: false,
-        )
-      ).toList();
-      
-      // Fix: Update which letters should be unlocked based on initial points
+
+      _treasures =
+          _letters
+              .map(
+                (letter) => Treasure(
+                  id: letter.id,
+                  qubeeLetterId: letter.id,
+                  word:
+                      letter.unlockedWords.isNotEmpty
+                          ? letter.unlockedWords.first
+                          : '',
+                  exampleSentence: letter.exampleSentence,
+                  meaningOfSentence: letter.meaningOfSentence,
+                  isCollected: false,
+                ),
+              )
+              .toList();
+
       _updateUnlockStatus();
-      
-      // Set initial letter (first unlocked one)
+
       _currentLetter = _letters.firstWhereOrNull((letter) => letter.isUnlocked);
 
       notifyListeners();
@@ -68,47 +70,45 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
 
-  // Mark letter as completed
-  void completeCurrentLetter(double accuracy) {
+  // Mark letter as completed - UPDATED to use both accuracy and pathCoverage
+  void completeCurrentLetter(double accuracy, double pathCoverage) {
     if (_currentLetter == null) return;
-    
+
     final index = _letters.indexWhere((l) => l.id == _currentLetter!.id);
     if (index >= 0) {
       _letters[index].isCompleted = true;
       _letters[index].tracingAccuracy = accuracy;
       _letters[index].practiceCount++;
-      
-      // Add points - points earned are proportional to accuracy
-      int earnedPoints = (10 * accuracy).ceil();
+
+      // Calculate points based on accuracy and path coverage
+      // With a maximum of 10 points (5 points for each metric)
+      int earnedPoints = ((accuracy * 5) + (pathCoverage * 5)).round();
+      earnedPoints = earnedPoints.clamp(0, 10); // Ensure it never exceeds 10
+
       _addPoints(earnedPoints);
-      
-      // Collect treasure for this letter
+
       _collectTreasures(_currentLetter!.id);
-      
-      // Unlock next letter if available
+
       _unlockNextLetter();
-      
+
       notifyListeners();
     }
   }
-  
+
   // Unlock next letter
   void _unlockNextLetter() {
     if (_currentLetter == null) return;
-    
-    // Find current letter index
+
     final currentIndex = _letters.indexWhere((l) => l.id == _currentLetter!.id);
     if (currentIndex >= 0 && currentIndex < _letters.length - 1) {
-      // Check next letter
       final nextLetter = _letters[currentIndex + 1];
-      // If enough points and not already unlocked
       if (!nextLetter.isUnlocked && _points >= nextLetter.requiredPoints) {
         _letters[currentIndex + 1].isUnlocked = true;
       }
     }
   }
-  
-  // Update unlock status based on points - Fixed to work properly
+
+  // Update unlock status based on points
   void _updateUnlockStatus() {
     for (int i = 0; i < _letters.length; i++) {
       if (!_letters[i].isUnlocked && _points >= _letters[i].requiredPoints) {
@@ -116,7 +116,7 @@ class QubeeQuestProvider extends ChangeNotifier {
       }
     }
   }
-  
+
   // Add points and update unlock status
   void _addPoints(int amount) {
     _points += amount;
@@ -127,7 +127,8 @@ class QubeeQuestProvider extends ChangeNotifier {
   // Collect treasures related to a letter
   void _collectTreasures(int letterId) {
     for (var i = 0; i < _treasures.length; i++) {
-      if (_treasures[i].qubeeLetterId == letterId && !_treasures[i].isCollected) {
+      if (_treasures[i].qubeeLetterId == letterId &&
+          !_treasures[i].isCollected) {
         _treasures[i].isCollected = true;
       }
     }
@@ -142,74 +143,69 @@ class QubeeQuestProvider extends ChangeNotifier {
   // Play letter sound with improved error handling
   Future<void> playLetterSound() async {
     if (_currentLetter == null || !_audioEnabled) return;
-    
+
     try {
       await _audioPlayer.setAsset(_currentLetter!.soundPath);
       await _audioPlayer.play();
-      
-      // Reset error state in case of previous error
+
       if (_showAudioError) {
         _showAudioError = false;
         notifyListeners();
       }
     } catch (e) {
       debugPrint('Error playing sound: $e');
-      
-      // Visual feedback for audio errors
+
       _showAudioError = true;
       notifyListeners();
-      
-      // Hide error message after a delay
+
       Future.delayed(const Duration(seconds: 3), () {
         if (_showAudioError) {
           _showAudioError = false;
           notifyListeners();
         }
       });
-      
-      // Use system haptic feedback as fallback
+
       HapticFeedback.mediumImpact();
     }
   }
-  
+
   // Play sound effect with improved error handling
   Future<void> playSound(String assetPath) async {
     if (!_audioEnabled) return;
-    
+
     try {
       await _audioPlayer.setAsset(assetPath);
       await _audioPlayer.play();
     } catch (e) {
       debugPrint('Error playing sound: $e');
-      
-      // Visual feedback for audio errors
+
       _showAudioError = true;
       notifyListeners();
-      
-      // Hide error message after a delay
+
       Future.delayed(const Duration(seconds: 3), () {
         if (_showAudioError) {
           _showAudioError = false;
           notifyListeners();
         }
       });
-      
-      // Use system haptic feedback as fallback
+
       HapticFeedback.mediumImpact();
     }
   }
 
   // Get treasure for a letter
   Treasure? getTreasureForLetter(int letterId) {
-    return _treasures.firstWhereOrNull((t) => t.qubeeLetterId == letterId && t.isCollected);
+    return _treasures.firstWhereOrNull(
+      (t) => t.qubeeLetterId == letterId && t.isCollected,
+    );
   }
-  
+
   // Get letter progress percentage across all letters
   double get overallProgress {
     if (_letters.isEmpty) return 0.0;
     return _letters.where((l) => l.isCompleted).length / _letters.length;
   }
-  
+
   // Get unlocked letter count
   int get unlockedLetterCount => _letters.where((l) => l.isUnlocked).length;
 
