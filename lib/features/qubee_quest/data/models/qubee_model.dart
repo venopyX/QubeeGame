@@ -15,6 +15,8 @@ class QubeeModel extends Qubee {
     required super.requiredPoints,
     super.isUnlocked,
     super.isCompleted,
+    super.tracingAccuracy,
+    super.practiceCount,
   });
 
   factory QubeeModel.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,8 @@ class QubeeModel extends Qubee {
       requiredPoints: json['requiredPoints'],
       isUnlocked: json['isUnlocked'] ?? false,
       isCompleted: json['isCompleted'] ?? false,
+      tracingAccuracy: json['tracingAccuracy']?.toDouble() ?? 0.0,
+      practiceCount: json['practiceCount'] ?? 0,
     );
   }
 
@@ -55,6 +59,8 @@ class QubeeModel extends Qubee {
       'requiredPoints': requiredPoints,
       'isUnlocked': isUnlocked,
       'isCompleted': isCompleted,
+      'tracingAccuracy': tracingAccuracy,
+      'practiceCount': practiceCount,
     };
   }
 }
