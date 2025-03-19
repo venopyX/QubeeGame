@@ -194,7 +194,7 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
                         },
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
