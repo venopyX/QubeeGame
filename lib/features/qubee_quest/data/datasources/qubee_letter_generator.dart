@@ -32,7 +32,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Baaduu', 'Barataa', 'Bineensa'],
         exampleSentence: 'Tolaan baaduudhaan nyaachaa jira.',
         meaningOfSentence: 'Tola is eating with cheese.',
-        requiredPoints: 10,
+        requiredPoints: 500,
         isUnlocked: false,
       ),
       
@@ -48,7 +48,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Caakkaa', 'Coqorsa', 'Cidha'],
         exampleSentence: 'Caakkaa keessa deemaa turre.',
         meaningOfSentence: 'We were walking in the jungle.',
-        requiredPoints: 20,
+        requiredPoints: 1000,
         isUnlocked: false,
       ),
       
@@ -64,7 +64,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Daangaa', 'Daldalaa', 'Dubbii'],
         exampleSentence: 'Daangaan Oromiyaa bal\'aadha.',
         meaningOfSentence: 'Oromia\'s boundary is very large.',
-        requiredPoints: 30,
+        requiredPoints: 2000,
         isUnlocked: false,
       ),
       
@@ -80,7 +80,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Eegee', 'Eebba', 'Eelee'],
         exampleSentence: 'Eegeen reettii xinnoodha.',
         meaningOfSentence: 'The tail of the goat is small.',
-        requiredPoints: 40,
+        requiredPoints: 3000,
         isUnlocked: false,
       ),
       
@@ -96,7 +96,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Farda', 'Finfinnee', 'Fayyaa'],
         exampleSentence: 'Farda gulufsiisuu nan jaalladha.',
         meaningOfSentence: 'I like riding horses.',
-        requiredPoints: 50,
+        requiredPoints: 4000,
         isUnlocked: false,
       ),
       
@@ -112,7 +112,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Gamoo', 'Gaaddidduu', 'Gurbaa'],
         exampleSentence: 'Gamoon keenya dheeraadha.',
         meaningOfSentence: 'Our building is very tall.',
-        requiredPoints: 60,
+        requiredPoints: 6000,
         isUnlocked: false,
       ),
       
@@ -128,7 +128,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Harree', 'Hoolaa', 'Harma'],
         exampleSentence: 'Harreen koo na jalaa badde.',
         meaningOfSentence: 'My donkey is lost.',
-        requiredPoints: 70,
+        requiredPoints: 7500,
         isUnlocked: false,
       ),
       
@@ -144,7 +144,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Ija', 'Ilkaan', 'Ilma'],
         exampleSentence: 'Ija kee ilaaluu nan jaalladha.',
         meaningOfSentence: 'I love looking at your eyes.',
-        requiredPoints: 80,
+        requiredPoints: 9000,
         isUnlocked: false,
       ),
       
@@ -160,7 +160,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Jaamaa', 'Jirbii', 'Jaalala'],
         exampleSentence: 'Obboleessi Boonaa jaamaadha.',
         meaningOfSentence: 'Bona\'s brother is blind.',
-        requiredPoints: 90,
+        requiredPoints: 10000,
         isUnlocked: false,
       ),
       
@@ -176,7 +176,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Karaa', 'Kaleessa', 'Killee'],
         exampleSentence: 'Konkolaataan karaa irra adeemaa jira.',
         meaningOfSentence: 'A car is moving on the road.',
-        requiredPoints: 100,
+        requiredPoints: 11000,
         isUnlocked: false,
       ),
       
@@ -192,7 +192,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Leenca', 'Laaqana', 'Lukkuu'],
         exampleSentence: 'An leenca hin sodaadhu.',
         meaningOfSentence: 'I don\'t fear lions.',
-        requiredPoints: 110,
+        requiredPoints: 12000,
         isUnlocked: false,
       ),
       
@@ -208,7 +208,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Mana', 'Muuzii', 'Marqaa'],
         exampleSentence: 'Mana Caaltuufaa ha deemnu.',
         meaningOfSentence: 'Let\'s go to Chaltu\'s home.',
-        requiredPoints: 120,
+        requiredPoints: 13000,
         isUnlocked: false,
       ),
       
@@ -224,7 +224,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Naacha', 'Nama', 'Naannoo'],
         exampleSentence: 'Afaan naachaa dheeraadha.',
         meaningOfSentence: 'The crocodile\'s mouth is very long.',
-        requiredPoints: 130,
+        requiredPoints: 14000,
         isUnlocked: false,
       ),
       
@@ -240,7 +240,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Onnee', 'Odaa', 'Obboleessa'],
         exampleSentence: 'Onnee koo siif kenneera.',
         meaningOfSentence: 'I have given you my heart.',
-        requiredPoints: 140,
+        requiredPoints: 15000,
         isUnlocked: false,
       ),
       
@@ -256,7 +256,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Paappayyaa', 'Poolisii', 'Pilaastikii'],
         exampleSentence: 'Iseen Paappayyaa nyaatte.',
         meaningOfSentence: 'She ate papaya.',
-        requiredPoints: 150,
+        requiredPoints: 16000,
         isUnlocked: false,
       ),
       
@@ -272,7 +272,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Qaaraa', 'Qabeenya', 'Qoricha'],
         exampleSentence: 'Qaaraan ija nama guba.',
         meaningOfSentence: 'Pepper burns the eyes.',
-        requiredPoints: 160,
+        requiredPoints: 17000,
         isUnlocked: false,
       ),
       
@@ -288,7 +288,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Raafuu', 'Raayyaa', 'Rifeensa'],
         exampleSentence: 'Raafuun eda nyaadhe ni mi\'aawa.',
         meaningOfSentence: 'The cabbage I ate last night is very sweet.',
-        requiredPoints: 170,
+        requiredPoints: 18000,
         isUnlocked: false,
       ),
       
@@ -304,7 +304,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Saree', 'Sagalee', 'Sabbata'],
         exampleSentence: 'Sareen isaanii nama ciniinti.',
         meaningOfSentence: 'Their dog bites people.',
-        requiredPoints: 180,
+        requiredPoints: 19000,
         isUnlocked: false,
       ),
       
@@ -320,7 +320,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Tulluu', 'Tolaa', 'Tiksee'],
         exampleSentence: 'Tulluun Walal dheeraadha.',
         meaningOfSentence: 'Walal hill is very tall.',
-        requiredPoints: 190,
+        requiredPoints: 20000,
         isUnlocked: false,
       ),
       
@@ -336,7 +336,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Urjii', 'Ulee', 'Utuba'],
         exampleSentence: 'Urjiilee samii keessaa sana ilaali.',
         meaningOfSentence: 'Look at the stars in the sky.',
-        requiredPoints: 210,
+        requiredPoints: 21500,
         isUnlocked: false,
       ),
       
@@ -352,7 +352,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Vaayitaamini', 'Viidiyoo', 'Vaazilinii'],
         exampleSentence: 'Loomiin vaaytaamina C of keessaa qaba.',
         meaningOfSentence: 'Lemons contain vitamin C.',
-        requiredPoints: 220,
+        requiredPoints: 22500,
         isUnlocked: false,
       ),
       
@@ -368,7 +368,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Waraqaa', 'Waaqaa', 'Walaloo'],
         exampleSentence: 'Waraqaa barreessuu bareeda.',
         meaningOfSentence: 'Writing on paper is beautiful.',
-        requiredPoints: 230,
+        requiredPoints: 23000,
         isUnlocked: false,
       ),
       
@@ -384,7 +384,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Xalayaa', 'Xuuxxoo', 'Xinnoo'],
         exampleSentence: 'Xalayaa hiriyaa koof barreesse.',
         meaningOfSentence: 'I wrote a letter to my friend.',
-        requiredPoints: 240,
+        requiredPoints: 24000,
         isUnlocked: false,
       ),
       
@@ -400,7 +400,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Yaada', 'Yaalii', 'Yaa\'ii'],
         exampleSentence: 'Yaada gaarii nuuf kennite.',
         meaningOfSentence: 'You gave us a good idea.',
-        requiredPoints: 250,
+        requiredPoints: 25000,
         isUnlocked: false,
       ),
       
@@ -416,7 +416,7 @@ class QubeeLetterGenerator {
         unlockedWords: ['Zayitii', 'Zabiiba', 'Zaytuuna'],
         exampleSentence: 'Zayitiin gatiin isaa baay\'ee mi\'aawa.',
         meaningOfSentence: 'Oil tastes very good with food.',
-        requiredPoints: 260,
+        requiredPoints: 26000,
         isUnlocked: false,
       ),
     ];
