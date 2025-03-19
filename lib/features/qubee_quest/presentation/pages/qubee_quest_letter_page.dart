@@ -6,64 +6,59 @@ import '../widgets/celebration_overlay.dart';
 
 class QubeeQuestLetterPage extends StatefulWidget {
   final int letterId;
-  
-  const QubeeQuestLetterPage({
-    required this.letterId,
-    super.key,
-  });
+
+  const QubeeQuestLetterPage({required this.letterId, super.key});
 
   @override
   State<QubeeQuestLetterPage> createState() => _QubeeQuestLetterPageState();
 }
 
-class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with SingleTickerProviderStateMixin {
+class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage>
+    with SingleTickerProviderStateMixin {
   bool _showCelebration = false;
   double _accuracy = 0.0;
   late AnimationController _celebrationController;
-  
+
   @override
   void initState() {
     super.initState();
-    // Select the current letter
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<QubeeQuestProvider>(context, listen: false);
       provider.selectLetter(widget.letterId);
-      
-      // Play letter sound
+
       provider.playLetterSound();
     });
-    
+
     _celebrationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     );
   }
-  
+
   @override
   void dispose() {
     _celebrationController.dispose();
     super.dispose();
   }
 
-  void _handleLetterCompleted() {
+  void _handleLetterCompleted(double accuracy, double pathCoverage) {
     final provider = Provider.of<QubeeQuestProvider>(context, listen: false);
-    provider.completeCurrentLetter(_accuracy);
-    
-    // Play success sound
+    provider.completeCurrentLetter(accuracy, pathCoverage);
+
     provider.playSound('assets/audio/success.mp3');
-    
+
     setState(() {
       _showCelebration = true;
     });
   }
-  
+
   void _handleAccuracyChanged(double accuracy) {
     _accuracy = accuracy;
   }
-  
+
   void _handleCelebrationDone() {
     if (mounted) {
-      Navigator.of(context).pop(); // Return to the map
+      Navigator.of(context).pop();
     }
   }
 
@@ -72,17 +67,16 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
     return Consumer<QubeeQuestProvider>(
       builder: (context, provider, _) {
         final currentLetter = provider.currentLetter;
-        
+
         if (currentLetter == null) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        
-        // Get treasure for this letter
+
         final treasure = provider.getTreasureForLetter(currentLetter.id);
         final treasureWord = treasure?.word;
-        
+
         return Scaffold(
           appBar: AppBar(
             title: Text('Learn Letter ${currentLetter.latinEquivalent}'),
@@ -95,18 +89,19 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
               ),
             ],
           ),
-          // Use a SafeArea wrapped SingleChildScrollView for scrollable content
           body: SafeArea(
             child: Stack(
               children: [
-                // Audio error indicator
                 if (provider.showAudioError)
                   Positioned(
                     top: 0,
                     left: 0,
                     right: 0,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 6,
+                        horizontal: 16,
+                      ),
                       color: Colors.red[100],
                       child: Row(
                         children: [
@@ -134,12 +129,11 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                       ),
                     ),
                   ),
-                
+
                 SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Letter information header with improved layout
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -153,7 +147,6 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                         ),
                         child: Row(
                           children: [
-                            // Letter display with animation
                             TweenAnimationBuilder<double>(
                               duration: const Duration(milliseconds: 500),
                               tween: Tween<double>(begin: 0.8, end: 1.0),
@@ -176,10 +169,11 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                                       ],
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          currentLetter.letter, // Uppercase
+                                          currentLetter.letter,
                                           style: const TextStyle(
                                             fontSize: 36,
                                             fontWeight: FontWeight.bold,
@@ -187,7 +181,7 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          currentLetter.smallLetter, // Lowercase
+                                          currentLetter.smallLetter,
                                           style: const TextStyle(
                                             fontSize: 36,
                                             fontWeight: FontWeight.bold,
@@ -200,8 +194,7 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                               },
                             ),
                             const SizedBox(width: 16),
-                            
-                            // Letter information
+
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,9 +229,11 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                         ),
                       ),
 
-                      // Instructions
                       Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
+                        ),
                         color: Colors.amber[50],
                         child: const Row(
                           children: [
@@ -256,16 +251,24 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                           ],
                         ),
                       ),
-                      
-                      // Example word with improved styling
+
                       if (currentLetter.unlockedWords.isNotEmpty)
                         Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green[50],
                             border: Border(
-                              top: BorderSide(color: Colors.green[100]!, width: 1),
-                              bottom: BorderSide(color: Colors.green[100]!, width: 1),
+                              top: BorderSide(
+                                color: Colors.green[100]!,
+                                width: 1,
+                              ),
+                              bottom: BorderSide(
+                                color: Colors.green[100]!,
+                                width: 1,
+                              ),
                             ),
                           ),
                           child: Row(
@@ -299,8 +302,9 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                               IconButton(
                                 icon: const Icon(Icons.volume_up),
                                 onPressed: () {
-                                  // Play word pronunciation (would need to add this to the model)
-                                  provider.playSound('assets/audio/words/${currentLetter.unlockedWords.first.toLowerCase()}.mp3');
+                                  provider.playSound(
+                                    'assets/audio/words/${currentLetter.unlockedWords.first.toLowerCase()}.mp3',
+                                  );
                                 },
                                 color: Colors.green[700],
                               ),
@@ -308,9 +312,8 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                           ),
                         ),
 
-                      // Main letter tracing widget - explicitly sized with a fixed height
                       SizedBox(
-                        height: 450, // Give it plenty of explicit height
+                        height: 450,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: LetterTracingWidget(
@@ -320,8 +323,7 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                           ),
                         ),
                       ),
-                      
-                      // Listen to pronunciation button - improved styling
+
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
@@ -344,13 +346,15 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                                 elevation: 3,
                               ),
                             ),
-                            
+
                             const SizedBox(width: 12),
-                            
-                            // Add practice count indicator
+
                             if (currentLetter.practiceCount > 0)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.blue[50],
                                   borderRadius: BorderRadius.circular(12),
@@ -359,7 +363,11 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.repeat, color: Colors.blue[700], size: 16),
+                                    Icon(
+                                      Icons.repeat,
+                                      color: Colors.blue[700],
+                                      size: 16,
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
                                       'Practiced ${currentLetter.practiceCount} ${currentLetter.practiceCount == 1 ? 'time' : 'times'}',
@@ -375,8 +383,7 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                           ],
                         ),
                       ),
-                      
-                      // Example sentence if available
+
                       if (currentLetter.exampleSentence.isNotEmpty)
                         Container(
                           margin: const EdgeInsets.all(16),
@@ -391,7 +398,10 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.format_quote, color: Colors.purple[700]),
+                                  Icon(
+                                    Icons.format_quote,
+                                    color: Colors.purple[700],
+                                  ),
                                   const SizedBox(width: 8),
                                   Text(
                                     'Example Sentence:',
@@ -428,8 +438,7 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage> with Single
                     ],
                   ),
                 ),
-                
-                // Celebration overlay when letter is completed
+
                 if (_showCelebration)
                   CelebrationOverlay(
                     controller: _celebrationController,
