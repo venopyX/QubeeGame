@@ -12,7 +12,7 @@ class HomePage extends StatelessWidget {
         slivers: [
           _buildAppBar(context),
           _buildHeader(context),
-          _buildFeaturedGame(context),
+          _buildFeaturedGames(context),  // Updated to include multiple featured games
           _buildGameGrid(context),
         ],
       ),
@@ -73,7 +73,7 @@ class HomePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Welcome back!',
+                  'Welcome back, venopyX!', 
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.grey[800],
@@ -115,107 +115,184 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildFeaturedGame(BuildContext context) {
+  Widget _buildFeaturedGames(BuildContext context) {
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: GestureDetector(
-          onTap: () => Navigator.pushNamed(context, AppRoutes.hibbooDashboard),
-          child: Container(
-            height: 200,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.green[400]!,
-                  Colors.green[600]!,
-                ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20, top: 10),
+            child: Text(
+              'Featured Games',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
               ),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.green.withOpacity(0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
+            ),
+          ),
+          SizedBox(
+            height: 220,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              children: [
+                _buildFeaturedGameCard(
+                  context,
+                  title: 'Hibboo',
+                  description: 'Solve traditional Oromo riddles and grow your wisdom tree',
+                  color1: Colors.green[400]!,
+                  color2: Colors.green[600]!,
+                  iconData: Icons.nature,
+                  route: AppRoutes.hibbooDashboard,
+                ),
+                _buildFeaturedGameCard(
+                  context,
+                  title: 'Qubee Quest',
+                  description: 'Learn the Oromo alphabet with exciting adventures',
+                  color1: Colors.purple[400]!,
+                  color2: Colors.purple[700]!,
+                  iconData: Icons.auto_stories,
+                  route: AppRoutes.qubeeQuestMap,
+                  isNew: true,
                 ),
               ],
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  right: -20,
-                  bottom: -20,
-                  child: Icon(
-                    Icons.nature,
-                    size: 160,
-                    color: Colors.white.withOpacity(0.2),
-                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturedGameCard(
+    BuildContext context, {
+    required String title,
+    required String description,
+    required Color color1,
+    required Color color2,
+    required IconData iconData,
+    required String route,
+    bool isNew = false,
+  }) {
+    return Container(
+      width: 280,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      child: GestureDetector(
+        onTap: () => Navigator.pushNamed(context, route),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [color1, color2],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: color1.withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -20,
+                bottom: -20,
+                child: Icon(
+                  iconData,
+                  size: 160,
+                  color: Colors.white.withOpacity(0.2),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          'Featured Game',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Hibboo',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Solve traditional Oromo riddles and grow your wisdom tree',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.play_circle_fill,
-                            color: Colors.white.withOpacity(0.9),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Play Now',
+                          child: const Text(
+                            'Featured',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                        ),
+                        if (isNew) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'NEW',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ],
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.play_circle_fill,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Play Now',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
-      ),
+        ),
+      ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
     );
   }
 
