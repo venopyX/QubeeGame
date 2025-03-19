@@ -45,11 +45,30 @@ class _QubeeQuestLetterPageState extends State<QubeeQuestLetterPage>
     final provider = Provider.of<QubeeQuestProvider>(context, listen: false);
     provider.completeCurrentLetter(accuracy, pathCoverage);
 
-    provider.playSound('assets/audio/success.mp3');
+    // Only show celebration if path coverage is above 90%
+    if (pathCoverage >= 0.9) {
+      provider.playSound('assets/audio/success.mp3');
 
-    setState(() {
-      _showCelebration = true;
-    });
+      setState(() {
+        _showCelebration = true;
+      });
+    } else {
+      // Show a toast or snackbar instead for lower path coverage
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Keep practicing! Try to trace more of the letter (${(pathCoverage * 100).toInt()}% covered)',
+            style: const TextStyle(fontSize: 14),
+          ),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
   }
 
   void _handleAccuracyChanged(double accuracy) {

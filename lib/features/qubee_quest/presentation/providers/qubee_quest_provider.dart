@@ -76,9 +76,20 @@ class QubeeQuestProvider extends ChangeNotifier {
 
     final index = _letters.indexWhere((l) => l.id == _currentLetter!.id);
     if (index >= 0) {
-      _letters[index].isCompleted = true;
+      // Only mark as completed if path coverage is high enough
+      bool isFullyCompleted = pathCoverage >= 0.9;
+
+      // Always update the accuracy and increment practice count
       _letters[index].tracingAccuracy = accuracy;
       _letters[index].practiceCount++;
+
+      // Only mark as completed if path coverage is sufficient
+      if (isFullyCompleted) {
+        _letters[index].isCompleted = true;
+
+        // Collect treasures only when fully completed
+        _collectTreasures(_currentLetter!.id);
+      }
 
       // Calculate points based on accuracy and path coverage
       // With a maximum of 10 points (5 points for each metric)
@@ -87,9 +98,10 @@ class QubeeQuestProvider extends ChangeNotifier {
 
       _addPoints(earnedPoints);
 
-      _collectTreasures(_currentLetter!.id);
-
-      _unlockNextLetter();
+      // Only try to unlock next letter if this one is fully completed
+      if (isFullyCompleted) {
+        _unlockNextLetter();
+      }
 
       notifyListeners();
     }
