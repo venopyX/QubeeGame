@@ -5,7 +5,7 @@ import '../../domain/entities/qubee.dart';
 class LetterTracingWidget extends StatefulWidget {
   final Qubee letter;
   final ValueChanged<double> onAccuracyChanged;
-  final VoidCallback onCompleted;
+  final void Function(double accuracy, double pathCoverage) onCompleted;
 
   const LetterTracingWidget({
     required this.letter,
@@ -33,17 +33,15 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
   String _feedbackMessage = 'Follow the blue path';
   Color _feedbackColor = Colors.blue;
   
-  // Store the letter ID to detect changes
   late int _currentLetterId;
   
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   
-  // Path evaluation parameters - adjusted for better user experience
-  static const double _proximityThreshold = 25.0; // Slightly increased for easier tracing
-  static const double _completionThreshold = 0.65; // Slightly reduced for easier completion 
-  static const double _pathCoverageMinimum = 0.80; // Slightly reduced for easier completion
-  static const double _penaltyForOffPath = 0.03; // Reduced penalty for more forgiveness
+  static const double _proximityThreshold = 25.0;
+  static const double _completionThreshold = 0.65;
+  static const double _pathCoverageMinimum = 0.80;
+  static const double _penaltyForOffPath = 0.03;
   
   @override
   void initState() {
@@ -63,21 +61,18 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
   void didUpdateWidget(LetterTracingWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     
-    // Check if the letter has changed and reset if needed
     if (oldWidget.letter.id != widget.letter.id) {
       _resetForNewLetter();
     }
   }
   
   void _resetForNewLetter() {
-    // Store the new letter ID
     _currentLetterId = widget.letter.id;
     
-    // Reset all tracing state
     _userPoints.clear();
     _userStrokes.clear();
     _currentStroke = [];
-    _guidePoints.clear(); // Clear guide points so they'll be recalculated
+    _guidePoints.clear();
     _progress = 0.0;
     _accuracy = 0.0;
     _pathCoverage = 0.0;
@@ -86,7 +81,6 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
     _feedbackMessage = 'Follow the blue path';
     _feedbackColor = Colors.blue;
     
-    // Force a rebuild
     if (mounted) {
       setState(() {});
     }
@@ -119,12 +113,10 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
   
   void _handlePanUpdate(DragUpdateDetails details) {
     if (_isTracing) {
-      // Performance optimization: only add points if they're far enough apart
       if (_currentStroke.isNotEmpty) {
         final lastPoint = _currentStroke.last;
         final distance = (details.localPosition - lastPoint).distance;
         
-        // Only add points if they're more than 5 pixels apart
         if (distance < 5.0) {
           return;
         }
@@ -134,7 +126,6 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
         _userPoints.add(details.localPosition);
         _updateProgress();
         
-        // Provide real-time feedback
         _updateFeedbackMessage();
       });
     }
@@ -174,16 +165,13 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
   void _updateProgress() {
     if (_guidePoints.isEmpty) return;
     
-    // Calculate how much of the path has been traced
     final List<bool> segmentsCovered = _calculateSegmentsCovered();
     _pathCoverage = segmentsCovered.where((covered) => covered).length / 
                               segmentsCovered.length;
     
-    // Calculate how many of the user's points are near the path (accuracy)
     int pointsOnPath = 0;
     int totalUserPoints = _userPoints.length;
     
-    // Performance optimization: limit points check to last 100 points
     if (totalUserPoints > 100) {
       totalUserPoints = 100;
       for (int i = _userPoints.length - totalUserPoints; i < _userPoints.length; i++) {
@@ -228,29 +216,23 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
       }
     }
     
-    // Calculate accuracy - percentage of points that are on the path
     _accuracy = totalUserPoints > 0 ? pointsOnPath / totalUserPoints : 0.0;
     
-    // Apply penalties for inaccurate tracing
     double offPathPenalty = (1.0 - _accuracy) * _penaltyForOffPath;
     
-    // Calculate final progress
     _progress = (_pathCoverage * 0.7) + (_accuracy * 0.3) - offPathPenalty;
     _progress = _progress.clamp(0.0, 1.0);
     
-    // Update current segment the user is tracing
     _updateCurrentSegment();
     
-    // Notify parent about accuracy changes
     widget.onAccuracyChanged(_accuracy);
     
-    // Check if tracing is complete enough
     _canComplete = _progress >= _completionThreshold && _pathCoverage >= _pathCoverageMinimum;
     
     if (_canComplete) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (_canComplete && mounted) {
-          widget.onCompleted();
+          widget.onCompleted(_accuracy, _pathCoverage);
         }
       });
     }
@@ -367,7 +349,6 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight - 150);
         
-        // Initialize guide points if needed
         if (_guidePoints.isEmpty) {
           _updateGuidePointsWithSize(size);
         }
@@ -384,10 +365,8 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
               ),
             ],
           ),
-          // Use Column layout with fixed sizes
           child: Column(
             children: [
-              // Tracing area - explicitly sized, not expanded
               Container(
                 height: constraints.maxHeight - 160,
                 decoration: const BoxDecoration(
@@ -416,7 +395,6 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
                 ),
               ),
               
-              // Clear visual separator
               Container(
                 height: 10,
                 decoration: BoxDecoration(
@@ -428,9 +406,8 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
                 ),
               ),
               
-              // Bottom Controls Panel - fixed height with improved feedback
               Container(
-                height: 150, // Fixed height for controls
+                height: 150,
                 padding: const EdgeInsets.all(12.0),
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -442,7 +419,6 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Feedback message
                     Container(
                       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
                       decoration: BoxDecoration(
@@ -476,7 +452,6 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
                   
                     const SizedBox(height: 8),
                     
-                    // Progress tracking
                     Row(
                       children: [
                         Expanded(
@@ -509,7 +484,6 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
                       ],
                     ),
                     
-                    // Path coverage indicator
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -543,12 +517,10 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
                       ],
                     ),
                     
-                    // Controls
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Toggle guide visibility
                         ElevatedButton.icon(
                           onPressed: () => setState(() {
                             _showGuide = !_showGuide;
@@ -567,7 +539,6 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget> with SingleTi
                           ),
                         ),
                         
-                        // Reset button
                         ElevatedButton.icon(
                           onPressed: _resetTracing,
                           icon: const Icon(Icons.replay, color: Colors.white),
@@ -611,37 +582,30 @@ class LetterTracePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Performance optimization: Early return if there's nothing to draw
     if (guidePoints.isEmpty) return;
     
-    // Draw background
     final bgPaint = Paint()
       ..color = Colors.grey.withAlpha(15)
       ..style = PaintingStyle.fill;
     
     canvas.drawRect(Offset.zero & size, bgPaint);
     
-    // Draw background letter shape
     _drawLetterBackground(canvas, size);
     
-    // Draw guide path if enabled
     if (showGuide && guidePoints.length >= 2) {
       _drawGuidePath(canvas);
     }
     
-    // Draw user's completed strokes
     for (var stroke in userStrokes) {
       _drawUserStroke(canvas, stroke);
     }
     
-    // Draw current stroke being drawn
     if (currentStroke.isNotEmpty) {
       _drawUserStroke(canvas, currentStroke);
     }
   }
   
   void _drawLetterBackground(Canvas canvas, Size size) {
-    // Draw a light gray representation of the letter in the background
     if (guidePoints.length < 2) return;
     
     final bgPaint = Paint()
@@ -662,7 +626,6 @@ class LetterTracePainter extends CustomPainter {
   }
   
   void _drawGuidePath(Canvas canvas) {
-    // Draw each segment of the guide path
     for (int i = 0; i < guidePoints.length - 1; i++) {
       final bool isCurrentSegment = (i == currentSegment);
       
@@ -677,7 +640,6 @@ class LetterTracePainter extends CustomPainter {
       
       canvas.drawLine(guidePoints[i], guidePoints[i + 1], paint);
       
-      // Draw dots at guide points
       final bool isStart = (i == 0);
       final bool isEnd = (i == guidePoints.length - 2);
       
@@ -690,7 +652,6 @@ class LetterTracePainter extends CustomPainter {
         Paint()..color = dotColor,
       );
       
-      // Draw the last endpoint
       if (i == guidePoints.length - 2) {
         canvas.drawCircle(
           guidePoints[i + 1],
@@ -699,7 +660,6 @@ class LetterTracePainter extends CustomPainter {
         );
       }
       
-      // Draw direction arrow at midpoint
       if (i < guidePoints.length - 1) {
         final start = guidePoints[i];
         final end = guidePoints[i + 1];
@@ -708,7 +668,6 @@ class LetterTracePainter extends CustomPainter {
           (start.dy + end.dy) / 2,
         );
         
-        // Calculate angle
         final angle = atan2(end.dy - start.dy, end.dx - start.dx);
         
         _drawArrow(canvas, midPoint, angle);
@@ -747,7 +706,6 @@ class LetterTracePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     
-    // Performance optimization: Use Path instead of multiple line segments
     final userPath = Path();
     userPath.moveTo(stroke.first.dx, stroke.first.dy);
     
@@ -757,14 +715,12 @@ class LetterTracePainter extends CustomPainter {
     
     canvas.drawPath(userPath, userPaint);
     
-    // Draw start point for this stroke
     canvas.drawCircle(
       stroke.first,
       6.0,
       Paint()..color = Colors.green[700]!,
     );
     
-    // Draw current point if this is the active stroke
     if (stroke == currentStroke && stroke.isNotEmpty) {
       canvas.drawCircle(
         stroke.last,
