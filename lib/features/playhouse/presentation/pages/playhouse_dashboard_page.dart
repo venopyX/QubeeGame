@@ -14,7 +14,7 @@ class PlayhouseDashboardPage extends StatefulWidget {
 
 class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
   final TextEditingController _searchController = TextEditingController();
-  
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +42,7 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
           } else if (provider.status == PlayhouseStatus.loaded) {
             return _buildDashboardView(provider);
           }
-          
+
           // Initial state
           return _buildLoadingView();
         },
@@ -51,9 +51,7 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
   }
 
   Widget _buildLoadingView() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 
   Widget _buildErrorView(String error) {
@@ -61,11 +59,7 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.error_outline,
-            color: Colors.red,
-            size: 60,
-          ),
+          const Icon(Icons.error_outline, color: Colors.red, size: 60),
           const SizedBox(height: 16),
           Text(
             'Oops! Something went wrong.',
@@ -75,9 +69,7 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
           Text(
             error,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.red.shade700,
-            ),
+            style: TextStyle(color: Colors.red.shade700),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -114,17 +106,14 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Colors.orange[700]!,
-                Colors.orange[500]!,
-              ],
+              colors: [Colors.orange[700]!, Colors.orange[500]!],
             ),
           ),
         ),
         title: Text(
           'Oromo Playhouse',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.95),
+            color: Colors.white.withValues(alpha: 0.95),
             fontWeight: FontWeight.bold,
             fontSize: 24,
           ),
@@ -189,7 +178,9 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
                         selected: provider.selectedCategory == category,
                         onSelected: (_) {
                           provider.selectCategory(
-                            provider.selectedCategory == category ? null : category
+                            provider.selectedCategory == category
+                                ? null
+                                : category,
                           );
                         },
                       ),
@@ -227,7 +218,7 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
         ),
       );
     }
-    
+
     return SliverPadding(
       padding: const EdgeInsets.all(16),
       sliver: SliverGrid(
@@ -237,18 +228,15 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
           mainAxisSpacing: 16,
           childAspectRatio: 0.75,
         ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final video = provider.videos[index];
-            return VideoCardWidget(
-              video: video,
-              onTap: () {
-                _openVideo(context, provider, video);
-              },
-            );
-          },
-          childCount: provider.videos.length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final video = provider.videos[index];
+          return VideoCardWidget(
+            video: video,
+            onTap: () {
+              _openVideo(context, provider, video);
+            },
+          );
+        }, childCount: provider.videos.length),
       ),
     );
   }
@@ -259,52 +247,53 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
     Video video,
   ) {
     provider.selectVideo(video);
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const PlayhousePlayingPage(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PlayhousePlayingPage()));
   }
 
   void _showInfoDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('About Oromo Playhouse'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                'Welcome to the Oromo Playhouse!',
-                style: TextStyle(fontWeight: FontWeight.bold),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('About Oromo Playhouse'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Welcome to the Oromo Playhouse!',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'This app features educational videos in Afan Oromo language. '
+                    'Browse, search, and watch videos to learn Oromo language and culture.',
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Features:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  Text('• Search for videos by title or description'),
+                  Text('• Filter videos by category'),
+                  Text('• Automatic playback of the next video in queue'),
+                  Text(
+                    '• Learn Oromo language and culture through engaging videos',
+                  ),
+                ],
               ),
-              SizedBox(height: 8),
-              Text(
-                'This app features educational videos in Afan Oromo language. '
-                'Browse, search, and watch videos to learn Oromo language and culture.',
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Got it!'),
+                onPressed: () => Navigator.of(context).pop(),
               ),
-              SizedBox(height: 16),
-              Text(
-                'Features:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Text('• Search for videos by title or description'),
-              Text('• Filter videos by category'),
-              Text('• Automatic playback of the next video in queue'),
-              Text('• Learn Oromo language and culture through engaging videos'),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Got it!'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
     );
   }
 }

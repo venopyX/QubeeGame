@@ -35,13 +35,13 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
     return Consumer<QubeeQuestProvider>(
       builder: (context, provider, _) {
         final letters = provider.letters;
-        
+
         if (letters.isEmpty) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        
+
         return Scaffold(
           appBar: AppBar(
             title: const Text('Qubee Quest'),
@@ -75,7 +75,10 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
               // Audio error indicator
               if (provider.showAudioError)
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 6,
+                    horizontal: 16,
+                  ),
                   color: Colors.red[100],
                   child: Row(
                     children: [
@@ -93,10 +96,13 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
                     ],
                   ),
                 ),
-              
+
               // Points indicator
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 16,
+                ),
                 color: Colors.amber[100],
                 child: Row(
                   children: [
@@ -120,7 +126,7 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
                   ],
                 ),
               ),
-              
+
               // Progress path visualization
               Container(
                 height: 70,
@@ -134,7 +140,7 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
                     final letter = letters[index];
                     final isLocked = !letter.isUnlocked;
                     final isCompleted = letter.isCompleted;
-                    
+
                     return Row(
                       children: [
                         // Connection line
@@ -144,28 +150,44 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
                             height: 2,
                             color: isLocked ? Colors.grey[300] : Colors.blue,
                           ),
-                        
+
                         // Letter node
                         GestureDetector(
-                          onTap: letter.isUnlocked ? () => _navigateToLetterPage(letter.id) : null,
+                          onTap:
+                              letter.isUnlocked
+                                  ? () => _navigateToLetterPage(letter.id)
+                                  : null,
                           child: Container(
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isLocked 
-                                  ? Colors.grey[200] 
-                                  : (isCompleted ? Colors.green : Colors.blue),
+                              color:
+                                  isLocked
+                                      ? Colors.grey[200]
+                                      : (isCompleted
+                                          ? Colors.green
+                                          : Colors.blue),
                               border: Border.all(
-                                color: isLocked 
-                                    ? Colors.grey[400]! 
-                                    : (isCompleted ? Colors.green[700]! : Colors.blue[700]!),
+                                color:
+                                    isLocked
+                                        ? Colors.grey[400]!
+                                        : (isCompleted
+                                            ? Colors.green[700]!
+                                            : Colors.blue[700]!),
                                 width: 2,
                               ),
                               boxShadow: [
                                 if (!isLocked)
                                   BoxShadow(
-                                    color: isCompleted ? Colors.green.withOpacity(0.3) : Colors.blue.withOpacity(0.3),
+                                    color:
+                                        isCompleted
+                                            ? Colors.green.withValues(
+                                              alpha: 0.3,
+                                            )
+                                            : Colors.blue.withValues(
+                                              alpha: 0.3,
+                                            ),
                                     blurRadius: 4,
                                     spreadRadius: 1,
                                   ),
@@ -175,7 +197,8 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
                             child: Text(
                               letter.letter,
                               style: TextStyle(
-                                color: isLocked ? Colors.grey[600] : Colors.white,
+                                color:
+                                    isLocked ? Colors.grey[600] : Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
                               ),
@@ -187,7 +210,7 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
                   },
                 ),
               ),
-              
+
               // Letters grid
               Expanded(
                 child: GridView.builder(
@@ -201,12 +224,13 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
                   itemCount: letters.length,
                   itemBuilder: (context, index) {
                     final letter = letters[index];
-                    
+
                     return QubeeLetterCardWidget(
                       letter: letter,
-                      onTap: letter.isUnlocked 
-                          ? () => _navigateToLetterPage(letter.id) 
-                          : null,
+                      onTap:
+                          letter.isUnlocked
+                              ? () => _navigateToLetterPage(letter.id)
+                              : null,
                     );
                   },
                 ),
@@ -225,116 +249,113 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
       },
     );
   }
-  
+
   void _showStatsDialog(BuildContext context, QubeeQuestProvider provider) {
     final completedCount = provider.letters.where((l) => l.isCompleted).length;
     final unlockedCount = provider.unlockedLetterCount;
     final totalCount = provider.letters.length;
-    
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Learning Stats'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Progress bar
-            const Text('Overall Progress'),
-            const SizedBox(height: 6),
-            LinearProgressIndicator(
-              value: provider.overallProgress,
-              backgroundColor: Colors.grey[200],
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-              minHeight: 10,
-              borderRadius: BorderRadius.circular(5),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${(provider.overallProgress * 100).toInt()}%',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Stats grid
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Learning Stats'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStatItem(
-                  context,
-                  'Completed',
-                  '$completedCount/$totalCount',
-                  Colors.green,
-                  Icons.check_circle,
+                // Progress bar
+                const Text('Overall Progress'),
+                const SizedBox(height: 6),
+                LinearProgressIndicator(
+                  value: provider.overallProgress,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                  minHeight: 10,
+                  borderRadius: BorderRadius.circular(5),
                 ),
-                _buildStatItem(
-                  context,
-                  'Unlocked',
-                  '$unlockedCount/$totalCount',
-                  Colors.blue,
-                  Icons.lock_open,
+                const SizedBox(height: 4),
+                Text(
+                  '${(provider.overallProgress * 100).toInt()}%',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Stats grid
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildStatItem(
+                      context,
+                      'Completed',
+                      '$completedCount/$totalCount',
+                      Colors.green,
+                      Icons.check_circle,
+                    ),
+                    _buildStatItem(
+                      context,
+                      'Unlocked',
+                      '$unlockedCount/$totalCount',
+                      Colors.blue,
+                      Icons.lock_open,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildStatItem(
+                      context,
+                      'Points',
+                      '${provider.points}',
+                      Colors.amber,
+                      Icons.star,
+                    ),
+                    _buildStatItem(
+                      context,
+                      'Treasures',
+                      '${provider.treasures.where((t) => t.isCollected).length}/${provider.treasures.length}',
+                      Colors.purple,
+                      Icons.card_giftcard,
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildStatItem(
-                  context,
-                  'Points',
-                  '${provider.points}',
-                  Colors.amber,
-                  Icons.star,
-                ),
-                _buildStatItem(
-                  context,
-                  'Treasures',
-                  '${provider.treasures.where((t) => t.isCollected).length}/${provider.treasures.length}',
-                  Colors.purple,
-                  Icons.card_giftcard,
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
-  
-  Widget _buildStatItem(BuildContext context, String title, String value, Color color, IconData icon) {
+
+  Widget _buildStatItem(
+    BuildContext context,
+    String title,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 24,
-          ),
+          child: Icon(icon, color: color, size: 24),
         ),
         const SizedBox(height: 8),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 12),
-        ),
+        Text(title, style: const TextStyle(fontSize: 12)),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ],
     );

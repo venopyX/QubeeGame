@@ -42,10 +42,7 @@ class HibbooDashboardPage extends StatelessWidget {
           if (provider.hasAchievement)
             Padding(
               padding: const EdgeInsets.only(right: 12.0),
-              child: Icon(
-                Icons.emoji_events,
-                color: Colors.amber[700],
-              ),
+              child: Icon(Icons.emoji_events, color: Colors.amber[700]),
             ),
         ],
       ),
@@ -78,7 +75,7 @@ class HibbooDashboardPage extends StatelessWidget {
                           _buildStageCard(context, provider),
                           const SizedBox(height: 16),
                           _buildPlayButton(context),
-                          
+
                           // Achievement counter
                           if (provider.correctAnswers > 0)
                             Padding(
@@ -102,11 +99,11 @@ class HibbooDashboardPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -134,11 +131,11 @@ class HibbooDashboardPage extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 32),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -160,7 +157,7 @@ class HibbooDashboardPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.2),
+                  color: Colors.amber.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -216,16 +213,19 @@ class HibbooDashboardPage extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildAchievementProgress(HibbooProvider provider) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 32),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
+        color: Colors.white.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: provider.hasAchievement ? Colors.amber : Colors.grey.withOpacity(0.3),
+          color:
+              provider.hasAchievement
+                  ? Colors.amber
+                  : Colors.grey.withValues(alpha: 0.3),
           width: provider.hasAchievement ? 2 : 1,
         ),
       ),
@@ -236,15 +236,23 @@ class HibbooDashboardPage extends StatelessWidget {
             children: [
               Icon(
                 provider.hasAchievement ? Icons.emoji_events : Icons.article,
-                color: provider.hasAchievement ? Colors.amber[700] : Colors.grey[600],
+                color:
+                    provider.hasAchievement
+                        ? Colors.amber[700]
+                        : Colors.grey[600],
                 size: 18,
               ),
               const SizedBox(width: 8),
               Text(
-                provider.hasAchievement ? 'Achievement Unlocked!' : 'Word Mastery',
+                provider.hasAchievement
+                    ? 'Achievement Unlocked!'
+                    : 'Word Mastery',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: provider.hasAchievement ? Colors.amber[700] : Colors.grey[700],
+                  color:
+                      provider.hasAchievement
+                          ? Colors.amber[700]
+                          : Colors.grey[700],
                 ),
               ),
             ],
@@ -262,14 +270,18 @@ class HibbooDashboardPage extends StatelessWidget {
               ),
               // Progress indicator
               FractionallySizedBox(
-                widthFactor: provider.correctAnswers / 85 > 1 ? 1 : provider.correctAnswers / 85,
+                widthFactor:
+                    provider.correctAnswers / 85 > 1
+                        ? 1
+                        : provider.correctAnswers / 85,
                 child: Container(
                   height: 8,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: provider.hasAchievement
-                          ? [Colors.amber[400]!, Colors.amber[700]!]
-                          : [Colors.green[300]!, Colors.green[500]!],
+                      colors:
+                          provider.hasAchievement
+                              ? [Colors.amber[400]!, Colors.amber[700]!]
+                              : [Colors.green[300]!, Colors.green[500]!],
                     ),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -281,10 +293,7 @@ class HibbooDashboardPage extends StatelessWidget {
             padding: const EdgeInsets.only(top: 4.0),
             child: Text(
               '${provider.correctAnswers} / 85 correct answers',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
             ),
           ),
         ],

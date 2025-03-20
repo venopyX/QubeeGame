@@ -18,9 +18,10 @@ class LottieTreeWidget extends StatefulWidget {
   State<LottieTreeWidget> createState() => _LottieTreeWidgetState();
 }
 
-class _LottieTreeWidgetState extends State<LottieTreeWidget> with SingleTickerProviderStateMixin {
+class _LottieTreeWidgetState extends State<LottieTreeWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  
+
   @override
   void initState() {
     super.initState();
@@ -28,21 +29,23 @@ class _LottieTreeWidgetState extends State<LottieTreeWidget> with SingleTickerPr
       vsync: this,
       duration: const Duration(seconds: 2),
     );
-    
+
     if (widget.showSparkles) {
       _animationController.repeat();
     }
   }
-  
+
   @override
   void didUpdateWidget(LottieTreeWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.showSparkles != oldWidget.showSparkles) {
-      widget.showSparkles ? _animationController.repeat() : _animationController.reset();
+      widget.showSparkles
+          ? _animationController.repeat()
+          : _animationController.reset();
     }
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
@@ -50,11 +53,14 @@ class _LottieTreeWidgetState extends State<LottieTreeWidget> with SingleTickerPr
   }
 
   Future<LottieComposition?> _customDecoder(List<int> bytes) {
-    return LottieComposition.decodeZip(bytes, filePicker: (files) {
-      return files.firstWhereOrNull(
-        (f) => f.name.startsWith('animations/') && f.name.endsWith('.json')
-      );
-    });
+    return LottieComposition.decodeZip(
+      bytes,
+      filePicker: (files) {
+        return files.firstWhereOrNull(
+          (f) => f.name.startsWith('animations/') && f.name.endsWith('.json'),
+        );
+      },
+    );
   }
 
   @override
@@ -74,7 +80,7 @@ class _LottieTreeWidgetState extends State<LottieTreeWidget> with SingleTickerPr
             ),
           ),
         ),
-        
+
         // Ground area
         Positioned(
           bottom: 0,
@@ -95,7 +101,7 @@ class _LottieTreeWidgetState extends State<LottieTreeWidget> with SingleTickerPr
             ),
           ),
         ),
-        
+
         // Main tree animation
         Lottie.asset(
           _getTreeAnimationPath(),
@@ -105,22 +111,19 @@ class _LottieTreeWidgetState extends State<LottieTreeWidget> with SingleTickerPr
           animate: true,
           decoder: _customDecoder,
         ),
-        
+
         // Growth indicator
-        Positioned(
-          bottom: 100,
-          child: _buildGrowthIndicator(),
-        ),
+        Positioned(bottom: 100, child: _buildGrowthIndicator()),
       ],
     );
   }
-  
+
   Widget _buildGrowthIndicator() {
     return Container(
       width: 200,
       height: 8,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
+        color: Colors.white.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(4),
       ),
       child: FractionallySizedBox(
@@ -134,7 +137,7 @@ class _LottieTreeWidgetState extends State<LottieTreeWidget> with SingleTickerPr
             borderRadius: BorderRadius.circular(4),
             boxShadow: [
               BoxShadow(
-                color: Colors.green.withOpacity(0.5),
+                color: Colors.green.withValues(alpha: 0.5),
                 blurRadius: 6,
                 spreadRadius: 1,
               ),
@@ -144,7 +147,7 @@ class _LottieTreeWidgetState extends State<LottieTreeWidget> with SingleTickerPr
       ),
     );
   }
-  
+
   String _getTreeAnimationPath() {
     switch (widget.stage) {
       case 'Seedling':

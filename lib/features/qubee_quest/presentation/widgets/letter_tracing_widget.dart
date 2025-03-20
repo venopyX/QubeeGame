@@ -35,6 +35,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
   String _feedbackMessage = 'Follow the blue path';
   Color _feedbackColor = Colors.blue;
 
+  // ignore: unused_field
   late int _currentLetterId;
 
   late AnimationController _pulseController;
@@ -422,14 +423,16 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
                   child: RawGestureDetector(
                     // Use RawGestureDetector for more control
                     gestures: <Type, GestureRecognizerFactory>{
-                      PanGestureRecognizer: GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
-                        () => PanGestureRecognizer(),
-                        (PanGestureRecognizer instance) {
-                          instance.onStart = _handlePanStart;
-                          instance.onUpdate = _handlePanUpdate;
-                          instance.onEnd = _handlePanEnd;
-                        },
-                      ),
+                      PanGestureRecognizer:
+                          GestureRecognizerFactoryWithHandlers<
+                            PanGestureRecognizer
+                          >(() => PanGestureRecognizer(), (
+                            PanGestureRecognizer instance,
+                          ) {
+                            instance.onStart = _handlePanStart;
+                            instance.onUpdate = _handlePanUpdate;
+                            instance.onEnd = _handlePanEnd;
+                          }),
                     },
                     behavior: HitTestBehavior.opaque,
                     child: CustomPaint(
@@ -478,10 +481,10 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
                         horizontal: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: _feedbackColor.withOpacity(0.1),
+                        color: _feedbackColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: _feedbackColor.withOpacity(0.3),
+                          color: _feedbackColor.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(

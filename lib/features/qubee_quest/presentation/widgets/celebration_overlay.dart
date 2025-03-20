@@ -192,7 +192,9 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                                 color: _getAccuracyColor(),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _getAccuracyColor().withOpacity(0.3),
+                                    color: _getAccuracyColor().withValues(
+                                      alpha: 0.3,
+                                    ),
                                     blurRadius: 12,
                                     spreadRadius: 4,
                                   ),

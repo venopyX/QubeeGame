@@ -199,7 +199,11 @@ class _TreeWidgetState extends State<TreeWidget> with TickerProviderStateMixin {
             // Add special decorations for Grand Tree
             Positioned(
               top: -20,
-              child: Icon(Icons.brightness_7, color: Colors.amber[600], size: 40),
+              child: Icon(
+                Icons.brightness_7,
+                color: Colors.amber[600],
+                size: 40,
+              ),
             ),
           ],
         );
@@ -215,7 +219,11 @@ class _TreeWidgetState extends State<TreeWidget> with TickerProviderStateMixin {
             Positioned(
               bottom: 50,
               right: 30,
-              child: Icon(Icons.auto_awesome, color: Colors.amber[300], size: 24),
+              child: Icon(
+                Icons.auto_awesome,
+                color: Colors.amber[300],
+                size: 24,
+              ),
             ),
           ],
         );
@@ -257,7 +265,8 @@ class TreeTheme {
   final double leafSize;
   final Color trunkColor;
   final Color leafColor;
-  final List<Widget> specialFeatures; // Added to support level-specific decorations
+  final List<Widget>
+  specialFeatures; // Added to support level-specific decorations
 
   TreeTheme({
     required this.trunkHeight,
@@ -272,9 +281,10 @@ class TreeTheme {
 class CloudPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.7)
-      ..style = PaintingStyle.fill;
+    final paint =
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.7)
+          ..style = PaintingStyle.fill;
 
     void drawCloud(double x, double y, double scale) {
       canvas.drawCircle(Offset(x, y), 20 * scale, paint);

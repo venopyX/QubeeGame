@@ -12,7 +12,9 @@ class HomePage extends StatelessWidget {
         slivers: [
           _buildAppBar(context),
           _buildHeader(context),
-          _buildFeaturedGames(context),  // Updated to include multiple featured games
+          _buildFeaturedGames(
+            context,
+          ), // Updated to include multiple featured games
           _buildGameGrid(context),
         ],
       ),
@@ -32,17 +34,14 @@ class HomePage extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Colors.blue[700]!,
-                Colors.blue[500]!,
-              ],
+              colors: [Colors.blue[700]!, Colors.blue[500]!],
             ),
           ),
         ),
         title: Text(
           'Qubee Games',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.95),
+            color: Colors.white.withValues(alpha: 0.95),
             fontWeight: FontWeight.bold,
             fontSize: 24,
           ),
@@ -52,11 +51,15 @@ class HomePage extends StatelessWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.person_outline, color: Colors.white),
-          onPressed: () {/* Profile action */},
+          onPressed: () {
+            /* Profile action */
+          },
         ),
         IconButton(
           icon: const Icon(Icons.settings_outlined, color: Colors.white),
-          onPressed: () {/* Settings action */},
+          onPressed: () {
+            /* Settings action */
+          },
         ),
       ],
     );
@@ -73,14 +76,17 @@ class HomePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Welcome back, venopyX!', 
+                  'Welcome back, venopyX!',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.grey[800],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green[100],
                     borderRadius: BorderRadius.circular(20),
@@ -104,10 +110,7 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Continue your Oromo language journey',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey[600], fontSize: 16),
             ),
           ],
         ),
@@ -140,7 +143,8 @@ class HomePage extends StatelessWidget {
                 _buildFeaturedGameCard(
                   context,
                   title: 'Hibboo',
-                  description: 'Solve traditional Oromo riddles and grow your wisdom tree',
+                  description:
+                      'Solve traditional Oromo riddles and grow your wisdom tree',
                   color1: Colors.green[400]!,
                   color2: Colors.green[600]!,
                   iconData: Icons.nature,
@@ -149,7 +153,8 @@ class HomePage extends StatelessWidget {
                 _buildFeaturedGameCard(
                   context,
                   title: 'Qubee Quest',
-                  description: 'Learn the Oromo alphabet with exciting adventures',
+                  description:
+                      'Learn the Oromo alphabet with exciting adventures',
                   color1: Colors.purple[400]!,
                   color2: Colors.purple[700]!,
                   iconData: Icons.auto_stories,
@@ -189,7 +194,7 @@ class HomePage extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: color1.withOpacity(0.3),
+                color: color1.withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -203,7 +208,7 @@ class HomePage extends StatelessWidget {
                 child: Icon(
                   iconData,
                   size: 160,
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                 ),
               ),
               Padding(
@@ -219,7 +224,7 @@ class HomePage extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Text(
@@ -238,7 +243,7 @@ class HomePage extends StatelessWidget {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.amber.withOpacity(0.8),
+                              color: Colors.amber.withValues(alpha: 0.8),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(
@@ -264,17 +269,14 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       description,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
                     ),
                     const Spacer(),
                     Row(
                       children: [
                         Icon(
                           Icons.play_circle_fill,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                         const SizedBox(width: 8),
                         const Text(
@@ -339,10 +341,10 @@ class HomePage extends StatelessWidget {
           childAspectRatio: 0.85,
         ),
         delegate: SliverChildBuilderDelegate(
-          (context, index) => _buildGameCard(context, games[index])
-            .animate()
-            .fadeIn(delay: (100 * index).ms)
-            .slideY(begin: 0.2),
+          (context, index) => _buildGameCard(
+            context,
+            games[index],
+          ).animate().fadeIn(delay: (100 * index).ms).slideY(begin: 0.2),
           childCount: games.length,
         ),
       ),
@@ -351,16 +353,19 @@ class HomePage extends StatelessWidget {
 
   Widget _buildGameCard(BuildContext context, _GameInfo game) {
     return GestureDetector(
-      onTap: game.comingSoon ? null : () {
-        Navigator.pushNamed(context, game.routeName!);
-      },
+      onTap:
+          game.comingSoon
+              ? null
+              : () {
+                Navigator.pushNamed(context, game.routeName!);
+              },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -376,7 +381,7 @@ class HomePage extends StatelessWidget {
                 child: Icon(
                   game.icon,
                   size: 100,
-                  color: game.color.withOpacity(0.1),
+                  color: game.color.withValues(alpha: 0.1),
                 ),
               ),
               if (game.comingSoon)
@@ -407,11 +412,7 @@ class HomePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      game.icon,
-                      size: 32,
-                      color: game.color,
-                    ),
+                    Icon(game.icon, size: 32, color: game.color),
                     const SizedBox(height: 16),
                     Text(
                       game.title,
@@ -423,10 +424,7 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       game.description,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
                     const Spacer(),
                     if (!game.comingSoon)
@@ -436,7 +434,7 @@ class HomePage extends StatelessWidget {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: game.color.withOpacity(0.1),
+                          color: game.color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
