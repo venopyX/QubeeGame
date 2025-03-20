@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/hibboo_provider.dart';
-import '../widgets/tree_widget.dart';
+import '../widgets/lottie_tree_widget.dart'; // Updated import
 import '../../../../app/routes/app_routes.dart';
 
 class HibbooDashboardPage extends StatelessWidget {
@@ -63,7 +63,8 @@ class HibbooDashboardPage extends StatelessWidget {
               Expanded(
                 child: Stack(
                   children: [
-                    TreeWidget(
+                    // Using the new Lottie tree widget instead of the old TreeWidget
+                    LottieTreeWidget(
                       stage: provider.currentStage,
                       growthPoints: provider.growthPoints,
                       showSparkles: provider.growthPoints > 0,
