@@ -8,7 +8,7 @@ class HibbooPlayingPage extends StatefulWidget {
   const HibbooPlayingPage({super.key});
 
   @override
-  _HibbooPlayingPageState createState() => _HibbooPlayingPageState();
+  State<HibbooPlayingPage> createState() => _HibbooPlayingPageState();
 }
 
 class _HibbooPlayingPageState extends State<HibbooPlayingPage>
