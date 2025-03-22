@@ -1,4 +1,4 @@
-# Qubee Games
+# Qubee Games [![Release](https://img.shields.io/badge/Download-QubeeGames%20v1.0.0-green)](https://github.com/venopyX/QubeeGame/releases/tag/v1.0.0)
 
 > <font color="cyan">**Learn With Laughter, Grow With Culture!**</font>
 
@@ -11,6 +11,10 @@ This Flutter application is designed to provide an engaging and educational expe
 <!-- ![QubeeGames Logo](https://github.com/venopyX/QubeeGame/raw/main/image.png) -->
 
 <img src="https://github.com/venopyX/QubeeGame/raw/main/image.png" alt="QubeeGame Logo" width="80%" height="50%">
+
+## Download
+
+[![Download](https://img.shields.io/badge/Download-QubeeGames%20v1.0.0-blue)](https://github.com/venopyX/QubeeGame/releases/tag/v1.0.0)
 
 ## Table of Contents
 
