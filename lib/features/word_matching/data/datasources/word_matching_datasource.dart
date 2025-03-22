@@ -434,7 +434,6 @@ class WordMatchingDatasource {
   }
 
   // Save game results including category stats
-
   Future<void> saveGameResult(
     int score,
     int totalQuestions, {
@@ -456,8 +455,8 @@ class WordMatchingDatasource {
     }
 
     // Add category if it's not already in the list
-    if (category != null &&
-        category != 'all' &&
+    if (category != null && 
+        category != 'all' && 
         !categoriesPlayed.contains(category)) {
       categoriesPlayed.add(category);
     }
@@ -466,13 +465,20 @@ class WordMatchingDatasource {
     final gamesPlayed = (currentStats['gamesPlayed'] as int?) ?? 0;
     final totalScoreValue = (currentStats['totalScore'] as int?) ?? 0;
     final highestScoreValue = (currentStats['highestScore'] as int?) ?? 0;
+    final totalCorrectAnswers = (currentStats['totalCorrectAnswers'] as int?) ?? 0;
+    final totalQuestionsTracked = (currentStats['totalQuestions'] as int?) ?? 0;
 
+    // Create updated stats by preserving all existing fields and updating only what's changed
     final updatedStats = {
+      ...currentStats, // Keep all existing fields
       'gamesPlayed': gamesPlayed + 1,
       'totalScore': totalScoreValue + score,
       'highestScore': score > highestScoreValue ? score : highestScoreValue,
+      'totalCorrectAnswers': totalCorrectAnswers + score,
+      'totalQuestions': totalQuestionsTracked + totalQuestions,
+      'averageScore': (totalScoreValue + score) / (gamesPlayed + 1),
       'categoriesPlayed': categoriesPlayed,
-      'lastUpdated': DateTime.now().toIso8601String(),
+      'lastPlayedDate': DateTime.now().toIso8601String(),
     };
 
     // Ensure the stats are properly saved
@@ -481,13 +487,20 @@ class WordMatchingDatasource {
       print('Successfully saved game stats: $updatedStats');
     } catch (e) {
       print('Error saving game stats: $e');
-      // Try a simpler approach if the complex object fails
-      final simpleStats = {
+      // If complex object fails, try with essential fields only
+      final essentialStats = {
         'gamesPlayed': gamesPlayed + 1,
         'totalScore': totalScoreValue + score,
         'highestScore': score > highestScoreValue ? score : highestScoreValue,
+        'totalCorrectAnswers': totalCorrectAnswers + score,
+        'totalQuestions': totalQuestionsTracked + totalQuestions,
       };
-      await prefs.setString(_statsKey, json.encode(simpleStats));
+      await prefs.setString(_statsKey, json.encode(essentialStats));
+    }
+    
+    // Update category stats if applicable
+    if (category != null && category != 'all') {
+      await _updateCategoryStats(category, score, totalQuestions);
     }
   }
 
@@ -521,18 +534,20 @@ class WordMatchingDatasource {
     }
 
     // Update category stats
-    final gamesPlayed = (categoryStats['gamesPlayed'] as int) + 1;
-    final totalScore = (categoryStats['totalScore'] as int) + score;
-    final highestScore =
-        score > (categoryStats['highestScore'] as int)
-            ? score
-            : categoryStats['highestScore'] as int;
-    final averageScore = gamesPlayed > 0 ? totalScore / gamesPlayed : 0.0;
+    final gamesPlayed = (categoryStats['gamesPlayed'] as int?) ?? 0;
+    final totalScore = (categoryStats['totalScore'] as int?) ?? 0;
+    final highestScore = (categoryStats['highestScore'] as int?) ?? 0;
+    
+    final newGamesPlayed = gamesPlayed + 1;
+    final newTotalScore = totalScore + score;
+    final newHighestScore = score > highestScore ? score : highestScore;
+    final averageScore = newGamesPlayed > 0 ? newTotalScore / newGamesPlayed : 0.0;
 
     categoryStats = {
-      'gamesPlayed': gamesPlayed,
-      'highestScore': highestScore,
-      'totalScore': totalScore,
+      ...categoryStats, // Keep existing fields
+      'gamesPlayed': newGamesPlayed,
+      'highestScore': newHighestScore,
+      'totalScore': newTotalScore,
       'averageScore': averageScore,
       'lastPlayedDate': DateTime.now().toIso8601String(),
     };

@@ -28,14 +28,14 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
   // Override the back button behavior
   Future<bool> _onWillPop() async {
     final provider = Provider.of<WordMatchingProvider>(context, listen: false);
-    
+
     // If we're playing or completed, go back to category selection instead of exiting
-    if (provider.status == WordMatchingStatus.playing || 
+    if (provider.status == WordMatchingStatus.playing ||
         provider.status == WordMatchingStatus.completed) {
       provider.resetGame();
       return false; // Don't allow the app to pop
     }
-    
+
     return true; // Allow normal back button behavior
   }
 
@@ -55,7 +55,7 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
               return IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () {
-                  if (provider.status == WordMatchingStatus.playing || 
+                  if (provider.status == WordMatchingStatus.playing ||
                       provider.status == WordMatchingStatus.completed) {
                     provider.resetGame(); // Go back to category selection
                   } else {
@@ -101,6 +101,211 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildGameView(WordMatchingProvider provider) {
+    final gamePairs = provider.gameWordPairs;
+    final matched = provider.matched;
+
+    // Debug output to monitor the state
+    print("Current score: ${provider.score}/${gamePairs.length}");
+    print("Matched status: $matched");
+
+    return Column(
+      children: [
+        // Score and info bar
+        Container(
+          padding: const EdgeInsets.all(16),
+          color: Colors.purple.shade50,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.emoji_events, color: Colors.amber),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Score: ${provider.score}/${gamePairs.length}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+              TextButton.icon(
+                icon: const Icon(Icons.help_outline),
+                label: const Text('How to Play'),
+                onPressed: () => _showHowToPlayDialog(context),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Match the Oromo words with their meanings',
+            style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+            textAlign: TextAlign.center,
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Image cards (meaning targets)
+        Expanded(
+          flex: 3,
+          child: GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.85,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: gamePairs.length,
+            itemBuilder: (context, index) {
+              final pair = gamePairs[index];
+              final isMatched = matched[pair.id] ?? false;
+
+              return WordCardWidget(
+                wordPair: pair,
+                isMatched: isMatched,
+                isTarget: true, // Image card
+                onTap: (_) {
+                  print("Target card tapped: ${pair.id}");
+                  if (_selectedWordId != null) {
+                    // THIS IS THE KEY PART - directly check if selected word matches target
+                    if (_selectedWordId == pair.id) {
+                      print("MATCH FOUND: $_selectedWordId matches ${pair.id}");
+                      // Update matched status in the provider
+                      setState(() {
+                        matched[pair.id] = true;
+                        provider.updateMatchedStatus(pair.id, true);
+                        provider.incrementScore();
+                        _selectedWordId = null;
+                      });
+
+                      // Check if all words are matched
+                      if (provider.isAllMatched()) {
+                        print("ALL MATCHED - Completing game!");
+                        provider.completeGame();
+                      }
+                    } else {
+                      print(
+                        "NO MATCH: $_selectedWordId doesn't match ${pair.id}",
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Try again!'),
+                          backgroundColor: Colors.red,
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                      setState(() {
+                        _selectedWordId = null;
+                      });
+                    }
+                  }
+                },
+              );
+            },
+          ),
+        ),
+
+        // Word selection section
+        Expanded(
+          flex: 2,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.purple.shade50,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Oromo Words:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.purple.shade800,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 2.5,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                    itemCount: provider.scrambledWordIds.length,
+                    itemBuilder: (context, index) {
+                      final wordId = provider.scrambledWordIds[index];
+                      final pair = provider.getWordPairById(wordId);
+                      final isMatched = matched[pair.id] ?? false;
+                      final isSelected = _selectedWordId == pair.id;
+
+                      if (isMatched) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return GestureDetector(
+                        onTap: () {
+                          print("Word tapped: ${pair.id}");
+                          setState(() {
+                            _selectedWordId = isSelected ? null : pair.id;
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:
+                                isSelected
+                                    ? Colors.purple.shade200
+                                    : Colors.orange.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color:
+                                  isSelected
+                                      ? Colors.purple.shade800
+                                      : Colors.orange.shade300,
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              pair.word,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    isSelected
+                                        ? Colors.purple.shade800
+                                        : Colors.orange.shade800,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -477,193 +682,6 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
     );
   }
 
-  Widget _buildGameView(WordMatchingProvider provider) {
-    final gamePairs = provider.gameWordPairs;
-    final matched = provider.matched;
-
-    return Column(
-      children: [
-        // Score and info bar
-        Container(
-          padding: const EdgeInsets.all(16),
-          color: Colors.purple.shade50,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.emoji_events, color: Colors.amber),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Score: ${provider.score}/${gamePairs.length}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-              TextButton.icon(
-                icon: const Icon(Icons.help_outline),
-                label: const Text('How to Play'),
-                onPressed: () => _showHowToPlayDialog(context),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'Match the Oromo words with their meanings',
-            style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-            textAlign: TextAlign.center,
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Image cards (meaning targets)
-        Expanded(
-          flex: 3,
-          child: GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.85,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            itemCount: gamePairs.length,
-            itemBuilder: (context, index) {
-              final pair = gamePairs[index];
-              final isMatched = matched[pair.id] ?? false;
-
-              return WordCardWidget(
-                wordPair: pair,
-                isMatched: isMatched,
-                isTarget: true, // Image card
-                onTap: (_) {
-                  if (_selectedWordId != null) {
-                    if (_selectedWordId == pair.id) {
-                      setState(() {
-                        matched[pair.id] = true;
-                        provider.attemptMatch(pair.id);
-                        _selectedWordId = null;
-                      });
-                    } else {
-                      // Wrong match
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Try again!'),
-                          backgroundColor: Colors.red,
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                      setState(() {
-                        _selectedWordId = null;
-                      });
-                    }
-                  }
-                },
-              );
-            },
-          ),
-        ),
-
-        // Word selection section
-        Expanded(
-          flex: 2,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.purple.shade50,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Oromo Words:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.purple.shade800,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 2.5,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
-                    itemCount: provider.scrambledWordIds.length,
-                    itemBuilder: (context, index) {
-                      final wordId = provider.scrambledWordIds[index];
-                      final pair = provider.getWordPairById(wordId);
-                      final isMatched = matched[pair.id] ?? false;
-                      final isSelected = _selectedWordId == pair.id;
-
-                      if (isMatched) {
-                        return const SizedBox.shrink();
-                      }
-
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedWordId = isSelected ? null : pair.id;
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color:
-                                isSelected
-                                    ? Colors.purple.shade200
-                                    : Colors.orange.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color:
-                                  isSelected
-                                      ? Colors.purple.shade800
-                                      : Colors.orange.shade300,
-                              width: isSelected ? 2 : 1,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              pair.word,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    isSelected
-                                        ? Colors.purple.shade800
-                                        : Colors.orange.shade800,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildCompletionView(WordMatchingProvider provider) {
     // Get the latest stats from provider
     final stats = provider.stats;
@@ -699,9 +717,9 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
               style: Theme.of(context).textTheme.titleLarge,
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 500.ms, duration: 500.ms),
-            
+
             const SizedBox(height: 24),
-            
+
             // Stats display
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 40),
@@ -725,7 +743,10 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Games Played:', style: TextStyle(color: Colors.grey.shade700)),
+                      Text(
+                        'Games Played:',
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
                       Text(
                         '$gamesPlayed',
                         style: const TextStyle(fontWeight: FontWeight.bold),
@@ -736,7 +757,10 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Highest Score:', style: TextStyle(color: Colors.grey.shade700)),
+                      Text(
+                        'Highest Score:',
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
                       Text(
                         '$highestScore',
                         style: const TextStyle(fontWeight: FontWeight.bold),
@@ -746,10 +770,10 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
                 ],
               ),
             ).animate().fadeIn(delay: 700.ms, duration: 500.ms),
-            
+
             const SizedBox(height: 32),
-            
-            // Action buttons - the main focus of our fix
+
+            // Action buttons
             Column(
               children: [
                 // Play Next Game button - prominent
@@ -777,7 +801,7 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Replay Same Game button
                 ElevatedButton.icon(
                   icon: const Icon(Icons.replay),
@@ -796,7 +820,7 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Choose Category button
                 TextButton.icon(
                   icon: Icon(Icons.category, color: Colors.purple.shade700),
@@ -813,7 +837,7 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
                 ),
               ],
             ).animate().fadeIn(delay: 800.ms, duration: 500.ms),
-            
+
             const SizedBox(height: 24),
           ],
         ),

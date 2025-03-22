@@ -26,6 +26,7 @@ class WordCardWidget extends StatelessWidget {
               ? null
               : () {
                 if (onTap != null) {
+                  print("Word card tapped: ${wordPair.id}");
                   onTap!(wordPair);
                 }
               },

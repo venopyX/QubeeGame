@@ -18,8 +18,8 @@ class WordMatchingRepositoryImpl implements WordMatchingRepository {
   }
 
   @override
-  Future<void> saveGameResult(int score, int totalQuestions) async {
-    await datasource.saveGameResult(score, totalQuestions);
+  Future<void> saveGameResult(int score, int totalQuestions, {String? category}) async {
+    await datasource.saveGameResult(score, totalQuestions, category: category);
   }
 
   @override
@@ -27,6 +27,6 @@ class WordMatchingRepositoryImpl implements WordMatchingRepository {
     return await datasource.getGameStats();
   }
   
-  // Expose datasource for direct access to category stats
+  @override
   WordMatchingDatasource get getDatasource => datasource;
 }

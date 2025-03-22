@@ -14,7 +14,6 @@ class WordMatchingProvider extends ChangeNotifier {
   Map<String, List<WordPair>> _wordPairsByCategory = {};
   String _selectedCategory = 'all';
   Map<String, bool> _matched = {};
-  String? _draggedWord;
   int _score = 0;
   String? _error;
   Map<String, dynamic> _stats = {};
@@ -131,65 +130,76 @@ class WordMatchingProvider extends ChangeNotifier {
 
   // Method to start a completely new game with new word pairs
   void startNewGame(int numberOfPairs) {
-    startGame(numberOfPairs);
-  }
-
-  void setDraggedWord(String? wordId) {
-    _draggedWord = wordId;
-    notifyListeners();
-  }
-
-  bool attemptMatch(String targetPairId) {
-    if (_draggedWord == null) return false;
+    // Reset game state but keep current category
+    _score = 0;
+    _matched = {};
+    _gameStartTime = DateTime.now();
     
-    // Find the dragged pair and target pair
-    final draggedPair = _gameWordPairs.firstWhere((pair) => pair.id == _draggedWord);
-    final targetPair = _gameWordPairs.firstWhere((pair) => pair.id == targetPairId);
+    // Get a fresh set of words for the selected category
+    final sourceWordPairs = _selectedCategory == 'all' 
+        ? _allWordPairs 
+        : _wordPairsByCategory[_selectedCategory] ?? [];
     
-    // Check if this is a match
-    final isCorrect = draggedPair.id == targetPair.id;
-    
-    if (isCorrect) {
-      _matched[targetPairId] = true;
-      _score++;
-      
-      // Check if game is completed
-      if (_matched.values.every((matched) => matched)) {
-        _completeGame();
-      }
+    if (sourceWordPairs.isEmpty) {
+      _error = 'No word pairs available for this category';
+      _status = WordMatchingStatus.error;
+      notifyListeners();
+      return;
     }
     
-    // Clear the dragged word
-    _draggedWord = null;
-    notifyListeners();
+    // Completely shuffle and select new pairs
+    final shuffledPairs = List<WordPair>.from(sourceWordPairs)..shuffle(Random());
+    _gameWordPairs = shuffledPairs.take(numberOfPairs).toList();
     
-    return isCorrect;
+    // Initialize match status
+    for (var pair in _gameWordPairs) {
+      _matched[pair.id] = false;
+    }
+    
+    // Create a fresh scrambled order for words
+    _scrambledWordIds = _gameWordPairs.map((pair) => pair.id).toList()..shuffle(Random());
+    
+    _status = WordMatchingStatus.playing;
+    notifyListeners();
   }
 
-  Future<void> _completeGame() async {
+  // NEW METHOD: Direct update of matched status
+  void updateMatchedStatus(String wordId, bool isMatched) {
+    _matched[wordId] = isMatched;
+    print("Updated matched status for $wordId to $isMatched");
+    print("Current matched status: $_matched");
+    notifyListeners();
+  }
+
+  // NEW METHOD: Direct increment of score
+  void incrementScore() {
+    _score++;
+    print("Score incremented to $_score/${_gameWordPairs.length}");
+    notifyListeners();
+  }
+
+  // NEW METHOD: Direct game completion trigger
+  void completeGame() {
+    print("completeGame() called with score $_score/${_gameWordPairs.length}");
     _status = WordMatchingStatus.completed;
-    notifyListeners(); // Notify first to update UI immediately
+    notifyListeners();
     
     // Save game results
     try {
-      await getWordPairs.saveResult(_score, _gameWordPairs.length);
-      
-      // For category-specific stats, save with category
-      if (_selectedCategory != 'all') {
-        final datasource = getWordPairs.repository.datasource;
-        await datasource.saveGameResult(
-          _score, 
-          _gameWordPairs.length, 
-          category: _selectedCategory
-        );
-      }
-      
-      // Refresh stats after saving
-      _stats = await getWordPairs.getStats();
-      
-      // Additional notification after stats updated
-      notifyListeners();
+      getWordPairs.saveResult(
+        _score, 
+        _gameWordPairs.length,
+        category: _selectedCategory
+      ).then((_) {
+        // Refresh stats after saving
+        getWordPairs.getStats().then((updatedStats) {
+          _stats = updatedStats;
+          print("Game stats saved and refreshed: $_stats");
+          notifyListeners();
+        });
+      });
     } catch (e) {
+      print("Error saving game result: $e");
       _error = 'Failed to save game result: ${e.toString()}';
       notifyListeners();
     }
@@ -202,11 +212,18 @@ class WordMatchingProvider extends ChangeNotifier {
   }
 
   bool isAllMatched() {
-    return _matched.values.every((m) => m);
+    final allMatched = _matched.values.every((m) => m);
+    print("isAllMatched() = $allMatched");
+    return allMatched;
   }
   
   // Get a word pair by ID
   WordPair getWordPairById(String id) {
-    return _gameWordPairs.firstWhere((pair) => pair.id == id);
+    try {
+      return _gameWordPairs.firstWhere((pair) => pair.id == id);
+    } catch (e) {
+      print("Error: Word pair with ID $id not found!");
+      throw Exception('Word pair not found: $id');
+    }
   }
 }

@@ -18,7 +18,7 @@ class GetWordPairs {
     return await repository.getGameStats();
   }
 
-  Future<void> saveResult(int score, int totalQuestions) async {
-    await repository.saveGameResult(score, totalQuestions);
+  Future<void> saveResult(int score, int totalQuestions, {String? category}) async {
+    await repository.saveGameResult(score, totalQuestions, category: category);
   }
 }
