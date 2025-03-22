@@ -309,6 +309,14 @@ class HomePage extends StatelessWidget {
         routeName: AppRoutes.playhouseDashboard,
       ),
       _GameInfo(
+        title: 'Word Matching',
+        description: 'Match Oromo words with their meanings',
+        icon: Icons.school,
+        color: Colors.purple,
+        comingSoon: false,
+        routeName: AppRoutes.wordMatchingGame,
+      ),
+      _GameInfo(
         title: 'Word Weaver',
         description: 'Create words from Qubee letters',
         icon: Icons.abc,
