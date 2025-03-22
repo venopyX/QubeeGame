@@ -58,7 +58,7 @@ class WordMatchingDatasource {
       ),
 
       // Nature Category
-      WordPairModel(
+      WordPairModel(G
         id: '6',
         word: 'bishaan',
         meaning: 'water',
@@ -318,7 +318,7 @@ class WordMatchingDatasource {
         word: 'hara/haroo',
         meaning: 'lake',
         imageUrl:
-            'https://cdn.fieldandforest.co/content/3-adventures/19-lakeohara/fieldandforest-lakeohara_e23.jpg',
+            'https://static.wixstatic.com/media/77f548_04d49cd53dd842cba0691035cfd102cb~mv2.jpg',
         category: 'nature',
         difficulty: 1,
       ),
@@ -327,7 +327,7 @@ class WordMatchingDatasource {
         word: 'baaduu',
         meaning: 'cheese',
         imageUrl:
-            'https://ogden_images.s3.amazonaws.com/www.motherearthnews.com/images/2025/01/28135802/how-to-make-cheese-from-sour-milk-1100x734.jpg',
+            'https://godairyfree.org/wp-content/uploads/2021/09/Cottage-Cheese-online-vert10.jpg',
         category: 'food',
         difficulty: 1,
       ),
@@ -455,8 +455,8 @@ class WordMatchingDatasource {
     }
 
     // Add category if it's not already in the list
-    if (category != null && 
-        category != 'all' && 
+    if (category != null &&
+        category != 'all' &&
         !categoriesPlayed.contains(category)) {
       categoriesPlayed.add(category);
     }
@@ -465,7 +465,8 @@ class WordMatchingDatasource {
     final gamesPlayed = (currentStats['gamesPlayed'] as int?) ?? 0;
     final totalScoreValue = (currentStats['totalScore'] as int?) ?? 0;
     final highestScoreValue = (currentStats['highestScore'] as int?) ?? 0;
-    final totalCorrectAnswers = (currentStats['totalCorrectAnswers'] as int?) ?? 0;
+    final totalCorrectAnswers =
+        (currentStats['totalCorrectAnswers'] as int?) ?? 0;
     final totalQuestionsTracked = (currentStats['totalQuestions'] as int?) ?? 0;
 
     // Create updated stats by preserving all existing fields and updating only what's changed
@@ -497,7 +498,7 @@ class WordMatchingDatasource {
       };
       await prefs.setString(_statsKey, json.encode(essentialStats));
     }
-    
+
     // Update category stats if applicable
     if (category != null && category != 'all') {
       await _updateCategoryStats(category, score, totalQuestions);
@@ -537,11 +538,12 @@ class WordMatchingDatasource {
     final gamesPlayed = (categoryStats['gamesPlayed'] as int?) ?? 0;
     final totalScore = (categoryStats['totalScore'] as int?) ?? 0;
     final highestScore = (categoryStats['highestScore'] as int?) ?? 0;
-    
+
     final newGamesPlayed = gamesPlayed + 1;
     final newTotalScore = totalScore + score;
     final newHighestScore = score > highestScore ? score : highestScore;
-    final averageScore = newGamesPlayed > 0 ? newTotalScore / newGamesPlayed : 0.0;
+    final averageScore =
+        newGamesPlayed > 0 ? newTotalScore / newGamesPlayed : 0.0;
 
     categoryStats = {
       ...categoryStats, // Keep existing fields
