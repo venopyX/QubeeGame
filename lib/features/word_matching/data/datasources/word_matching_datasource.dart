@@ -200,7 +200,8 @@ class WordMatchingDatasource {
         id: '21',
         word: 'gafarsa',
         meaning: 'buffalo',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Buffalo_in_dirt_in_Yala_National_Park.jpg/640px-Buffalo_in_dirt_in_Yala_National_Park.jpg',
+        imageUrl:
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Buffalo_in_dirt_in_Yala_National_Park.jpg/640px-Buffalo_in_dirt_in_Yala_National_Park.jpg',
         category: 'animals',
         difficulty: 1,
       ),
@@ -399,7 +400,7 @@ class WordMatchingDatasource {
         'lastPlayedDate': DateTime.now().toIso8601String(),
         'categoriesPlayed': <String>[],
       };
-      
+
       // Save initial stats
       await prefs.setString(_statsKey, json.encode(initialStats));
       return initialStats;
@@ -412,12 +413,13 @@ class WordMatchingDatasource {
   Future<Map<String, dynamic>> getCategoryStats(String category) async {
     final prefs = await SharedPreferences.getInstance();
     final String? allCategoryStatsJson = prefs.getString(_categoryStatsKey);
-    
+
     Map<String, dynamic> allCategoryStats = {};
     if (allCategoryStatsJson != null) {
-      allCategoryStats = json.decode(allCategoryStatsJson) as Map<String, dynamic>;
+      allCategoryStats =
+          json.decode(allCategoryStatsJson) as Map<String, dynamic>;
     }
-    
+
     // If no stats for this category yet, return default stats
     if (!allCategoryStats.containsKey(category)) {
       return {
@@ -427,67 +429,83 @@ class WordMatchingDatasource {
         'averageScore': 0.0,
       };
     }
-    
+
     return allCategoryStats[category] as Map<String, dynamic>;
   }
 
   // Save game results including category stats
-  Future<void> saveGameResult(int score, int totalQuestions, {String? category}) async {
+
+  Future<void> saveGameResult(
+    int score,
+    int totalQuestions, {
+    String? category,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
-    
-    // Update global stats
     final currentStats = await getGameStats();
-    
-    final totalGamesPlayed = (currentStats['gamesPlayed'] as int) + 1;
-    final totalScore = (currentStats['totalScore'] as int) + score;
-    final totalCorrectAnswers = (currentStats['totalCorrectAnswers'] as int) + score;
-    final totalQuestionsAsked = (currentStats['totalQuestions'] as int) + totalQuestions;
-    
-    final averageScore = totalQuestionsAsked > 0 
-        ? (totalCorrectAnswers / totalQuestionsAsked) * 100 
-        : 0.0;
-    
-    final highestScore = score > (currentStats['highestScore'] as int) 
-        ? score 
-        : currentStats['highestScore'] as int;
-    
-    // Update categories played
-    final List<dynamic> categoriesPlayedDynamic = currentStats['categoriesPlayed'] as List<dynamic>;
-    final List<String> categoriesPlayed = categoriesPlayedDynamic.cast<String>();
-    
-    if (category != null && !categoriesPlayed.contains(category) && category != 'all') {
+
+    // Convert categories played to a List<String> safely
+    List<String> categoriesPlayed = [];
+    if (currentStats.containsKey('categoriesPlayed')) {
+      if (currentStats['categoriesPlayed'] is List) {
+        categoriesPlayed = List<String>.from(
+          (currentStats['categoriesPlayed'] as List).map(
+            (item) => item.toString(),
+          ),
+        );
+      }
+    }
+
+    // Add category if it's not already in the list
+    if (category != null &&
+        category != 'all' &&
+        !categoriesPlayed.contains(category)) {
       categoriesPlayed.add(category);
     }
-    
+
+    // Safely get current values with defaults
+    final gamesPlayed = (currentStats['gamesPlayed'] as int?) ?? 0;
+    final totalScoreValue = (currentStats['totalScore'] as int?) ?? 0;
+    final highestScoreValue = (currentStats['highestScore'] as int?) ?? 0;
+
     final updatedStats = {
-      'gamesPlayed': totalGamesPlayed,
-      'totalScore': totalScore,
-      'highestScore': highestScore,
-      'averageScore': averageScore,
-      'totalCorrectAnswers': totalCorrectAnswers,
-      'totalQuestions': totalQuestionsAsked,
-      'lastPlayedDate': DateTime.now().toIso8601String(),
+      'gamesPlayed': gamesPlayed + 1,
+      'totalScore': totalScoreValue + score,
+      'highestScore': score > highestScoreValue ? score : highestScoreValue,
       'categoriesPlayed': categoriesPlayed,
+      'lastUpdated': DateTime.now().toIso8601String(),
     };
-    
-    await prefs.setString(_statsKey, json.encode(updatedStats));
-    
-    // Update category specific stats if a category is provided
-    if (category != null && category != 'all') {
-      await _updateCategoryStats(category, score, totalQuestions);
+
+    // Ensure the stats are properly saved
+    try {
+      await prefs.setString(_statsKey, json.encode(updatedStats));
+      print('Successfully saved game stats: $updatedStats');
+    } catch (e) {
+      print('Error saving game stats: $e');
+      // Try a simpler approach if the complex object fails
+      final simpleStats = {
+        'gamesPlayed': gamesPlayed + 1,
+        'totalScore': totalScoreValue + score,
+        'highestScore': score > highestScoreValue ? score : highestScoreValue,
+      };
+      await prefs.setString(_statsKey, json.encode(simpleStats));
     }
   }
-  
+
   // Helper method to update category-specific stats
-  Future<void> _updateCategoryStats(String category, int score, int totalQuestions) async {
+  Future<void> _updateCategoryStats(
+    String category,
+    int score,
+    int totalQuestions,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final String? allCategoryStatsJson = prefs.getString(_categoryStatsKey);
-    
+
     Map<String, dynamic> allCategoryStats = {};
     if (allCategoryStatsJson != null) {
-      allCategoryStats = json.decode(allCategoryStatsJson) as Map<String, dynamic>;
+      allCategoryStats =
+          json.decode(allCategoryStatsJson) as Map<String, dynamic>;
     }
-    
+
     // Get existing stats for this category or create new
     Map<String, dynamic> categoryStats = {};
     if (allCategoryStats.containsKey(category)) {
@@ -501,17 +519,16 @@ class WordMatchingDatasource {
         'bestTime': null,
       };
     }
-    
+
     // Update category stats
     final gamesPlayed = (categoryStats['gamesPlayed'] as int) + 1;
     final totalScore = (categoryStats['totalScore'] as int) + score;
-    final highestScore = score > (categoryStats['highestScore'] as int) 
-        ? score 
-        : categoryStats['highestScore'] as int;
-    final averageScore = gamesPlayed > 0 
-        ? totalScore / gamesPlayed 
-        : 0.0;
-    
+    final highestScore =
+        score > (categoryStats['highestScore'] as int)
+            ? score
+            : categoryStats['highestScore'] as int;
+    final averageScore = gamesPlayed > 0 ? totalScore / gamesPlayed : 0.0;
+
     categoryStats = {
       'gamesPlayed': gamesPlayed,
       'highestScore': highestScore,
@@ -519,14 +536,14 @@ class WordMatchingDatasource {
       'averageScore': averageScore,
       'lastPlayedDate': DateTime.now().toIso8601String(),
     };
-    
+
     // Update the category in the overall map
     allCategoryStats[category] = categoryStats;
-    
+
     // Save back to SharedPreferences
     await prefs.setString(_categoryStatsKey, json.encode(allCategoryStats));
   }
-  
+
   // Reset all game statistics
   Future<void> resetGameStats() async {
     final prefs = await SharedPreferences.getInstance();

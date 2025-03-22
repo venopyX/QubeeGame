@@ -18,25 +18,25 @@ class WordMatchingProvider extends ChangeNotifier {
   int _score = 0;
   String? _error;
   Map<String, dynamic> _stats = {};
-  Map<String, dynamic> _categoryStats = {};
   
   // For tracking game play time
   DateTime? _gameStartTime;
-  Duration _currentGameDuration = Duration.zero;
+  
+  // For scrambled word order
+  List<String> _scrambledWordIds = [];
 
   WordMatchingProvider(this.getWordPairs);
 
   WordMatchingStatus get status => _status;
   List<WordPair> get allWordPairs => _allWordPairs;
   List<WordPair> get gameWordPairs => _gameWordPairs;
+  List<String> get scrambledWordIds => _scrambledWordIds;
   List<String> get categories => _wordPairsByCategory.keys.toList();
   String get selectedCategory => _selectedCategory;
   Map<String, bool> get matched => _matched;
   int get score => _score;
   String? get error => _error;
   Map<String, dynamic> get stats => _stats;
-  Map<String, dynamic> get categoryStats => _categoryStats;
-  Duration get currentGameDuration => _currentGameDuration;
 
   Future<void> loadWordPairs() async {
     _status = WordMatchingStatus.loading;
@@ -70,22 +70,6 @@ class WordMatchingProvider extends ChangeNotifier {
 
   void selectCategory(String category) {
     _selectedCategory = category;
-    // Load category-specific stats when a category is selected
-    _loadCategoryStats(category);
-    notifyListeners();
-  }
-  
-  Future<void> _loadCategoryStats(String category) async {
-    if (category != 'all') {
-      try {
-        final datasource = getWordPairs.repository.datasource;
-        _categoryStats = await datasource.getCategoryStats(category);
-      } catch (e) {
-        _error = 'Failed to load category stats: ${e.toString()}';
-      }
-    } else {
-      _categoryStats = {};
-    }
     notifyListeners();
   }
 
@@ -94,7 +78,6 @@ class WordMatchingProvider extends ChangeNotifier {
     _score = 0;
     _matched = {};
     _gameStartTime = DateTime.now();
-    _currentGameDuration = Duration.zero;
     
     // Get words for selected category
     final sourceWordPairs = _selectedCategory == 'all' 
@@ -117,8 +100,38 @@ class WordMatchingProvider extends ChangeNotifier {
       _matched[pair.id] = false;
     }
     
+    // Create a scrambled order for words
+    _scrambledWordIds = _gameWordPairs.map((pair) => pair.id).toList()..shuffle(Random());
+    
     _status = WordMatchingStatus.playing;
     notifyListeners();
+  }
+
+  // Method to replay the current game with the same words but reshuffled
+  void replayCurrentGame() {
+    // Reset score and matched status
+    _score = 0;
+    _matched = {};
+    
+    // Keep the same game word pairs but reset the match status
+    for (var pair in _gameWordPairs) {
+      _matched[pair.id] = false;
+    }
+    
+    // Reshuffle the word order
+    _scrambledWordIds = _gameWordPairs.map((pair) => pair.id).toList()..shuffle(Random());
+    
+    // Reset the game timer
+    _gameStartTime = DateTime.now();
+    
+    // Set status back to playing
+    _status = WordMatchingStatus.playing;
+    notifyListeners();
+  }
+
+  // Method to start a completely new game with new word pairs
+  void startNewGame(int numberOfPairs) {
+    startGame(numberOfPairs);
   }
 
   void setDraggedWord(String? wordId) {
@@ -153,39 +166,37 @@ class WordMatchingProvider extends ChangeNotifier {
     return isCorrect;
   }
 
-  void _completeGame() async {
+  Future<void> _completeGame() async {
     _status = WordMatchingStatus.completed;
-    
-    // Calculate game duration
-    if (_gameStartTime != null) {
-      _currentGameDuration = DateTime.now().difference(_gameStartTime!);
-    }
+    notifyListeners(); // Notify first to update UI immediately
     
     // Save game results
     try {
       await getWordPairs.saveResult(_score, _gameWordPairs.length);
       
-      // Also save to the datasource with category information
-      final datasource = getWordPairs.repository.datasource;
-      await datasource.saveGameResult(
-        _score, 
-        _gameWordPairs.length,
-        category: _selectedCategory,
-      );
-      
-      // Refresh stats
-      _stats = await getWordPairs.getStats();
+      // For category-specific stats, save with category
       if (_selectedCategory != 'all') {
-        _categoryStats = await datasource.getCategoryStats(_selectedCategory);
+        final datasource = getWordPairs.repository.datasource;
+        await datasource.saveGameResult(
+          _score, 
+          _gameWordPairs.length, 
+          category: _selectedCategory
+        );
       }
+      
+      // Refresh stats after saving
+      _stats = await getWordPairs.getStats();
+      
+      // Additional notification after stats updated
+      notifyListeners();
     } catch (e) {
       _error = 'Failed to save game result: ${e.toString()}';
+      notifyListeners();
     }
-    
-    notifyListeners();
   }
 
   void resetGame() {
+    // Reset to category selection view
     _status = WordMatchingStatus.loaded;
     notifyListeners();
   }
@@ -194,21 +205,8 @@ class WordMatchingProvider extends ChangeNotifier {
     return _matched.values.every((m) => m);
   }
   
-  Future<void> resetAllStats() async {
-    try {
-      final datasource = getWordPairs.repository.datasource;
-      await datasource.resetGameStats();
-      
-      // Reload stats
-      _stats = await getWordPairs.getStats();
-      if (_selectedCategory != 'all') {
-        _categoryStats = await datasource.getCategoryStats(_selectedCategory);
-      }
-      
-      notifyListeners();
-    } catch (e) {
-      _error = 'Failed to reset stats: ${e.toString()}';
-      notifyListeners();
-    }
+  // Get a word pair by ID
+  WordPair getWordPairById(String id) {
+    return _gameWordPairs.firstWhere((pair) => pair.id == id);
   }
 }

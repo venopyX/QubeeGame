@@ -13,6 +13,7 @@ class WordMatchingGamePage extends StatefulWidget {
 
 class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
   String? _selectedWordId;
+  int _currentDifficulty = 4; // Store the current difficulty
 
   @override
   void initState() {
@@ -24,32 +25,81 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
     });
   }
 
+  // Override the back button behavior
+  Future<bool> _onWillPop() async {
+    final provider = Provider.of<WordMatchingProvider>(context, listen: false);
+    
+    // If we're playing or completed, go back to category selection instead of exiting
+    if (provider.status == WordMatchingStatus.playing || 
+        provider.status == WordMatchingStatus.completed) {
+      provider.resetGame();
+      return false; // Don't allow the app to pop
+    }
+    
+    return true; // Allow normal back button behavior
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Word Matching Game'),
-        backgroundColor: Colors.purple.shade700,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Consumer<WordMatchingProvider>(
-        builder: (context, provider, child) {
-          switch (provider.status) {
-            case WordMatchingStatus.loading:
-              return _buildLoadingView();
-            case WordMatchingStatus.error:
-              return _buildErrorView(provider);
-            case WordMatchingStatus.loaded:
-              return _buildCategorySelectionView(provider);
-            case WordMatchingStatus.playing:
-              return _buildGameView(provider);
-            case WordMatchingStatus.completed:
-              return _buildCompletionView(provider);
-            case WordMatchingStatus.initial:
-              return _buildLoadingView();
-          }
-        },
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Word Matching Game'),
+          backgroundColor: Colors.purple.shade700,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          leading: Consumer<WordMatchingProvider>(
+            builder: (context, provider, child) {
+              // Override back button behavior
+              return IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  if (provider.status == WordMatchingStatus.playing || 
+                      provider.status == WordMatchingStatus.completed) {
+                    provider.resetGame(); // Go back to category selection
+                  } else {
+                    Navigator.of(context).pop(); // Regular back button behavior
+                  }
+                },
+              );
+            },
+          ),
+          actions: [
+            Consumer<WordMatchingProvider>(
+              builder: (context, provider, child) {
+                if (provider.status == WordMatchingStatus.playing) {
+                  return IconButton(
+                    icon: const Icon(Icons.refresh),
+                    tooltip: 'Restart Game',
+                    onPressed: () {
+                      _showRestartConfirmationDialog(context, provider);
+                    },
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
+        body: Consumer<WordMatchingProvider>(
+          builder: (context, provider, child) {
+            switch (provider.status) {
+              case WordMatchingStatus.loading:
+                return _buildLoadingView();
+              case WordMatchingStatus.error:
+                return _buildErrorView(provider);
+              case WordMatchingStatus.loaded:
+                return _buildCategorySelectionView(provider);
+              case WordMatchingStatus.playing:
+                return _buildGameView(provider);
+              case WordMatchingStatus.completed:
+                return _buildCompletionView(provider);
+              case WordMatchingStatus.initial:
+                return _buildLoadingView();
+            }
+          },
+        ),
       ),
     );
   }
@@ -376,6 +426,9 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
   }) {
     return InkWell(
       onTap: () {
+        setState(() {
+          _currentDifficulty = difficulty; // Store selected difficulty
+        });
         Navigator.of(context).pop();
         provider.startGame(difficulty);
       },
@@ -553,9 +606,10 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
                         ),
-                    itemCount: gamePairs.length,
+                    itemCount: provider.scrambledWordIds.length,
                     itemBuilder: (context, index) {
-                      final pair = gamePairs[index];
+                      final wordId = provider.scrambledWordIds[index];
+                      final pair = provider.getWordPairById(wordId);
                       final isMatched = matched[pair.id] ?? false;
                       final isSelected = _selectedWordId == pair.id;
 
@@ -611,71 +665,158 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
   }
 
   Widget _buildCompletionView(WordMatchingProvider provider) {
+    // Get the latest stats from provider
+    final stats = provider.stats;
+    final gamesPlayed = stats['gamesPlayed'] ?? 0;
+    final highestScore = stats['highestScore'] ?? 0;
+
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.emoji_events,
-            color: Colors.amber,
-            size: 80,
-          ).animate().scale(
-            begin: const Offset(0.5, 0.5),
-            end: const Offset(1.0, 1.0),
-            duration: 600.ms,
-            curve: Curves.elasticOut,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Game Completed!',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.purple.shade700,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.emoji_events,
+              color: Colors.amber,
+              size: 80,
+            ).animate().scale(
+              begin: const Offset(0.5, 0.5),
+              end: const Offset(1.0, 1.0),
+              duration: 600.ms,
+              curve: Curves.elasticOut,
             ),
-          ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
-          const SizedBox(height: 16),
-          Text(
-            'You matched ${provider.score}/${provider.gameWordPairs.length} words correctly',
-            style: Theme.of(context).textTheme.titleLarge,
-            textAlign: TextAlign.center,
-          ).animate().fadeIn(delay: 500.ms, duration: 500.ms),
-          const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey.shade200,
-                  foregroundColor: Colors.grey.shade800,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Exit Game'),
+            const SizedBox(height: 24),
+            Text(
+              'Game Completed!',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.purple.shade700,
               ),
-              const SizedBox(width: 16),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.replay),
-                label: const Text('Play Again'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-                onPressed: () {
-                  provider.resetGame();
-                },
+            ).animate().fadeIn(delay: 300.ms, duration: 500.ms),
+            const SizedBox(height: 16),
+            Text(
+              'You matched ${provider.score}/${provider.gameWordPairs.length} words correctly',
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ).animate().fadeIn(delay: 500.ms, duration: 500.ms),
+            
+            const SizedBox(height: 24),
+            
+            // Stats display
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 40),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.purple.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.purple.shade200),
               ),
-            ],
-          ).animate().fadeIn(delay: 800.ms, duration: 500.ms),
-        ],
+              child: Column(
+                children: [
+                  Text(
+                    'Your Stats',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple.shade800,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Games Played:', style: TextStyle(color: Colors.grey.shade700)),
+                      Text(
+                        '$gamesPlayed',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Highest Score:', style: TextStyle(color: Colors.grey.shade700)),
+                      Text(
+                        '$highestScore',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ).animate().fadeIn(delay: 700.ms, duration: 500.ms),
+            
+            const SizedBox(height: 32),
+            
+            // Action buttons - the main focus of our fix
+            Column(
+              children: [
+                // Play Next Game button - prominent
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.arrow_forward),
+                  label: const Text('Play Next Game'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple.shade700,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    // Generate a new set of word pairs with the same difficulty and category
+                    provider.startNewGame(_currentDifficulty);
+                  },
+                ),
+                const SizedBox(height: 16),
+                
+                // Replay Same Game button
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.replay),
+                  label: const Text('Replay Same Words'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
+                  onPressed: () {
+                    // Reset the current game without generating new words
+                    provider.replayCurrentGame();
+                  },
+                ),
+                const SizedBox(height: 16),
+                
+                // Choose Category button
+                TextButton.icon(
+                  icon: Icon(Icons.category, color: Colors.purple.shade700),
+                  label: Text(
+                    'Choose Different Category',
+                    style: TextStyle(
+                      color: Colors.purple.shade700,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onPressed: () {
+                    provider.resetGame();
+                  },
+                ),
+              ],
+            ).animate().fadeIn(delay: 800.ms, duration: 500.ms),
+            
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
@@ -715,6 +856,35 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
               TextButton(
                 child: const Text('Got It!'),
                 onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showRestartConfirmationDialog(
+    BuildContext context,
+    WordMatchingProvider provider,
+  ) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Restart Game?'),
+            content: const Text(
+              'Are you sure you want to restart the game? Your current progress will be lost.',
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              TextButton(
+                child: const Text('Restart'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  provider.startGame(_currentDifficulty);
+                },
               ),
             ],
           ),
