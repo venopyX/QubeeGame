@@ -7,6 +7,11 @@
 Welcome to Qubee Games!
 This Flutter application is designed to provide an engaging and educational experience for users, focusing on language learning and interactive gameplay. The app currently features three main MVP (Minimum Viable Product) features: Hibboo Language Learning Game, Playhouse Video Browsing Experience, and QubeeQuest Letter Tracing.
 
+
+<!-- ![QubeeGames Logo](https://github.com/venopyX/QubeeGame/raw/main/image.png) -->
+
+<img src="https://github.com/venopyX/QubeeGame/raw/main/image.png" alt="QubeeGame Logo" width="80%" height="50%">
+
 ## Table of Contents
 
 1. [Introduction](#introduction)
