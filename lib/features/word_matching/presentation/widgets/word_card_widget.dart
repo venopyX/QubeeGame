@@ -66,7 +66,7 @@ class WordCardWidget extends StatelessWidget {
         children: [
           // Image background
           Positioned.fill(
-            child: Image.asset(
+            child: Image.network(
               wordPair.imageUrl,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
