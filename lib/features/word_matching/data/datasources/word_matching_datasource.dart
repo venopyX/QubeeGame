@@ -4,6 +4,7 @@ import '../models/word_pair_model.dart';
 
 class WordMatchingDatasource {
   static const String _statsKey = 'word_matching_stats';
+  static const String _categoryStatsKey = 'word_matching_category_stats';
 
   // For the MVP, we'll use hardcoded word pairs data
   // In a real implementation, this would come from Firebase or another backend
@@ -199,7 +200,7 @@ class WordMatchingDatasource {
         id: '21',
         word: 'gafarsa',
         meaning: 'buffalo',
-        imageUrl: 'https://kor.ill.in.ua/m/610x385/2482753.jpg',
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Buffalo_in_dirt_in_Yala_National_Park.jpg/640px-Buffalo_in_dirt_in_Yala_National_Park.jpg',
         category: 'animals',
         difficulty: 1,
       ),
@@ -381,37 +382,155 @@ class WordMatchingDatasource {
         .toList();
   }
 
+  // Get global game statistics
   Future<Map<String, dynamic>> getGameStats() async {
     final prefs = await SharedPreferences.getInstance();
     final String? statsJson = prefs.getString(_statsKey);
 
     if (statsJson == null) {
       // Initial stats
-      return {
+      final initialStats = {
         'gamesPlayed': 0,
         'totalScore': 0,
         'highestScore': 0,
+        'averageScore': 0.0,
+        'totalCorrectAnswers': 0,
+        'totalQuestions': 0,
+        'lastPlayedDate': DateTime.now().toIso8601String(),
         'categoriesPlayed': <String>[],
       };
+      
+      // Save initial stats
+      await prefs.setString(_statsKey, json.encode(initialStats));
+      return initialStats;
     }
 
     return json.decode(statsJson) as Map<String, dynamic>;
   }
 
-  Future<void> saveGameResult(int score, int totalQuestions) async {
+  // Get category-specific statistics
+  Future<Map<String, dynamic>> getCategoryStats(String category) async {
     final prefs = await SharedPreferences.getInstance();
+    final String? allCategoryStatsJson = prefs.getString(_categoryStatsKey);
+    
+    Map<String, dynamic> allCategoryStats = {};
+    if (allCategoryStatsJson != null) {
+      allCategoryStats = json.decode(allCategoryStatsJson) as Map<String, dynamic>;
+    }
+    
+    // If no stats for this category yet, return default stats
+    if (!allCategoryStats.containsKey(category)) {
+      return {
+        'gamesPlayed': 0,
+        'highestScore': 0,
+        'totalScore': 0,
+        'averageScore': 0.0,
+      };
+    }
+    
+    return allCategoryStats[category] as Map<String, dynamic>;
+  }
+
+  // Save game results including category stats
+  Future<void> saveGameResult(int score, int totalQuestions, {String? category}) async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Update global stats
     final currentStats = await getGameStats();
-
+    
+    final totalGamesPlayed = (currentStats['gamesPlayed'] as int) + 1;
+    final totalScore = (currentStats['totalScore'] as int) + score;
+    final totalCorrectAnswers = (currentStats['totalCorrectAnswers'] as int) + score;
+    final totalQuestionsAsked = (currentStats['totalQuestions'] as int) + totalQuestions;
+    
+    final averageScore = totalQuestionsAsked > 0 
+        ? (totalCorrectAnswers / totalQuestionsAsked) * 100 
+        : 0.0;
+    
+    final highestScore = score > (currentStats['highestScore'] as int) 
+        ? score 
+        : currentStats['highestScore'] as int;
+    
+    // Update categories played
+    final List<dynamic> categoriesPlayedDynamic = currentStats['categoriesPlayed'] as List<dynamic>;
+    final List<String> categoriesPlayed = categoriesPlayedDynamic.cast<String>();
+    
+    if (category != null && !categoriesPlayed.contains(category) && category != 'all') {
+      categoriesPlayed.add(category);
+    }
+    
     final updatedStats = {
-      'gamesPlayed': currentStats['gamesPlayed'] + 1,
-      'totalScore': currentStats['totalScore'] + score,
-      'highestScore':
-          score > (currentStats['highestScore'] ?? 0)
-              ? score
-              : currentStats['highestScore'],
-      'categoriesPlayed': currentStats['categoriesPlayed'],
+      'gamesPlayed': totalGamesPlayed,
+      'totalScore': totalScore,
+      'highestScore': highestScore,
+      'averageScore': averageScore,
+      'totalCorrectAnswers': totalCorrectAnswers,
+      'totalQuestions': totalQuestionsAsked,
+      'lastPlayedDate': DateTime.now().toIso8601String(),
+      'categoriesPlayed': categoriesPlayed,
     };
-
+    
     await prefs.setString(_statsKey, json.encode(updatedStats));
+    
+    // Update category specific stats if a category is provided
+    if (category != null && category != 'all') {
+      await _updateCategoryStats(category, score, totalQuestions);
+    }
+  }
+  
+  // Helper method to update category-specific stats
+  Future<void> _updateCategoryStats(String category, int score, int totalQuestions) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? allCategoryStatsJson = prefs.getString(_categoryStatsKey);
+    
+    Map<String, dynamic> allCategoryStats = {};
+    if (allCategoryStatsJson != null) {
+      allCategoryStats = json.decode(allCategoryStatsJson) as Map<String, dynamic>;
+    }
+    
+    // Get existing stats for this category or create new
+    Map<String, dynamic> categoryStats = {};
+    if (allCategoryStats.containsKey(category)) {
+      categoryStats = allCategoryStats[category] as Map<String, dynamic>;
+    } else {
+      categoryStats = {
+        'gamesPlayed': 0,
+        'highestScore': 0,
+        'totalScore': 0,
+        'averageScore': 0.0,
+        'bestTime': null,
+      };
+    }
+    
+    // Update category stats
+    final gamesPlayed = (categoryStats['gamesPlayed'] as int) + 1;
+    final totalScore = (categoryStats['totalScore'] as int) + score;
+    final highestScore = score > (categoryStats['highestScore'] as int) 
+        ? score 
+        : categoryStats['highestScore'] as int;
+    final averageScore = gamesPlayed > 0 
+        ? totalScore / gamesPlayed 
+        : 0.0;
+    
+    categoryStats = {
+      'gamesPlayed': gamesPlayed,
+      'highestScore': highestScore,
+      'totalScore': totalScore,
+      'averageScore': averageScore,
+      'lastPlayedDate': DateTime.now().toIso8601String(),
+    };
+    
+    // Update the category in the overall map
+    allCategoryStats[category] = categoryStats;
+    
+    // Save back to SharedPreferences
+    await prefs.setString(_categoryStatsKey, json.encode(allCategoryStats));
+  }
+  
+  // Reset all game statistics
+  Future<void> resetGameStats() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_statsKey);
+    await prefs.remove(_categoryStatsKey);
   }
 }

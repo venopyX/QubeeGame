@@ -18,6 +18,11 @@ class WordMatchingProvider extends ChangeNotifier {
   int _score = 0;
   String? _error;
   Map<String, dynamic> _stats = {};
+  Map<String, dynamic> _categoryStats = {};
+  
+  // For tracking game play time
+  DateTime? _gameStartTime;
+  Duration _currentGameDuration = Duration.zero;
 
   WordMatchingProvider(this.getWordPairs);
 
@@ -30,6 +35,8 @@ class WordMatchingProvider extends ChangeNotifier {
   int get score => _score;
   String? get error => _error;
   Map<String, dynamic> get stats => _stats;
+  Map<String, dynamic> get categoryStats => _categoryStats;
+  Duration get currentGameDuration => _currentGameDuration;
 
   Future<void> loadWordPairs() async {
     _status = WordMatchingStatus.loading;
@@ -49,7 +56,7 @@ class WordMatchingProvider extends ChangeNotifier {
         _wordPairsByCategory[pair.category]!.add(pair);
       }
       
-      // Load stats
+      // Load global stats
       _stats = await getWordPairs.getStats();
       
       _status = WordMatchingStatus.loaded;
@@ -63,6 +70,22 @@ class WordMatchingProvider extends ChangeNotifier {
 
   void selectCategory(String category) {
     _selectedCategory = category;
+    // Load category-specific stats when a category is selected
+    _loadCategoryStats(category);
+    notifyListeners();
+  }
+  
+  Future<void> _loadCategoryStats(String category) async {
+    if (category != 'all') {
+      try {
+        final datasource = getWordPairs.repository.datasource;
+        _categoryStats = await datasource.getCategoryStats(category);
+      } catch (e) {
+        _error = 'Failed to load category stats: ${e.toString()}';
+      }
+    } else {
+      _categoryStats = {};
+    }
     notifyListeners();
   }
 
@@ -70,6 +93,8 @@ class WordMatchingProvider extends ChangeNotifier {
     // Reset game state
     _score = 0;
     _matched = {};
+    _gameStartTime = DateTime.now();
+    _currentGameDuration = Duration.zero;
     
     // Get words for selected category
     final sourceWordPairs = _selectedCategory == 'all' 
@@ -131,10 +156,28 @@ class WordMatchingProvider extends ChangeNotifier {
   void _completeGame() async {
     _status = WordMatchingStatus.completed;
     
+    // Calculate game duration
+    if (_gameStartTime != null) {
+      _currentGameDuration = DateTime.now().difference(_gameStartTime!);
+    }
+    
     // Save game results
     try {
       await getWordPairs.saveResult(_score, _gameWordPairs.length);
+      
+      // Also save to the datasource with category information
+      final datasource = getWordPairs.repository.datasource;
+      await datasource.saveGameResult(
+        _score, 
+        _gameWordPairs.length,
+        category: _selectedCategory,
+      );
+      
+      // Refresh stats
       _stats = await getWordPairs.getStats();
+      if (_selectedCategory != 'all') {
+        _categoryStats = await datasource.getCategoryStats(_selectedCategory);
+      }
     } catch (e) {
       _error = 'Failed to save game result: ${e.toString()}';
     }
@@ -149,5 +192,23 @@ class WordMatchingProvider extends ChangeNotifier {
 
   bool isAllMatched() {
     return _matched.values.every((m) => m);
+  }
+  
+  Future<void> resetAllStats() async {
+    try {
+      final datasource = getWordPairs.repository.datasource;
+      await datasource.resetGameStats();
+      
+      // Reload stats
+      _stats = await getWordPairs.getStats();
+      if (_selectedCategory != 'all') {
+        _categoryStats = await datasource.getCategoryStats(_selectedCategory);
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      _error = 'Failed to reset stats: ${e.toString()}';
+      notifyListeners();
+    }
   }
 }

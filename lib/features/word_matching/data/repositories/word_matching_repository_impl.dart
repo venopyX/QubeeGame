@@ -26,4 +26,7 @@ class WordMatchingRepositoryImpl implements WordMatchingRepository {
   Future<Map<String, dynamic>> getGameStats() async {
     return await datasource.getGameStats();
   }
+  
+  // Expose datasource for direct access to category stats
+  WordMatchingDatasource get getDatasource => datasource;
 }
