@@ -3,8 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/hibboo_provider.dart';
+import '../widgets/hibboo_hint_section.dart';
+import '../widgets/hibboo_question_card.dart';
+import '../widgets/hibboo_answer_section.dart';
+import '../widgets/confetti_painter.dart';
+import '../../../../shared/widgets/rounded_badge.dart';
+import '../../../../shared/widgets/gradient_progress_indicator.dart';
 
+/// Page for playing the Hibboo game (solving riddles)
 class HibbooPlayingPage extends StatefulWidget {
+  /// Creates a HibbooPlayingPage
   const HibbooPlayingPage({super.key});
 
   @override
@@ -39,14 +47,12 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
     final String correctAnswer = provider.currentHibboo.answer.toLowerCase();
     final String userAnswer = _controller.text.toLowerCase();
 
-    // Calculate similarity between user's answer and correct answer
     bool isCorrect = false;
     bool isCloseEnough = false;
 
     if (userAnswer == correctAnswer) {
       isCorrect = true;
     } else {
-      // Check if the answer is "close enough" (similar spelling)
       isCloseEnough = _isAnswerCloseEnough(userAnswer, correctAnswer);
     }
 
@@ -56,7 +62,6 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
         setState(() => _showConfetti = false);
       });
 
-      // Get current hibboo and advance to next one
       final solvedHibboo = provider.solveAndAdvance();
 
       _showSuccessDialog(
@@ -77,26 +82,18 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
     }
   }
 
-  // Helper function to check if the user's answer is close enough
   bool _isAnswerCloseEnough(String userAnswer, String correctAnswer) {
-    // If length difference is too great, it's not close enough
     if ((userAnswer.length - correctAnswer.length).abs() > 2) {
       return false;
     }
 
-    // Calculate edit distance (Levenshtein distance)
     int distance = _calculateLevenshteinDistance(userAnswer, correctAnswer);
-
-    // Allow for small differences based on word length
     int maxAllowedDistance = (correctAnswer.length / 4).ceil();
-
-    // For very short words, always allow at least 1 character difference
     maxAllowedDistance = maxAllowedDistance < 1 ? 1 : maxAllowedDistance;
 
     return distance <= maxAllowedDistance;
   }
 
-  // Levenshtein distance calculation to determine string similarity
   int _calculateLevenshteinDistance(String s1, String s2) {
     if (s1 == s2) return 0;
     if (s1.isEmpty) return s2.length;
@@ -120,7 +117,6 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
         ].reduce((curr, next) => curr < next ? curr : next);
       }
 
-      // Swap current and previous rows
       final temp = prevRow;
       prevRow = currentRow;
       currentRow = temp;
@@ -173,7 +169,6 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Display the question and answer
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -302,6 +297,13 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
     );
   }
 
+  void _requestHint(HibbooProvider provider) {
+    setState(() {
+      _hint = provider.currentHibboo.answer;
+      _scrambledLetters = _hint!.split('')..shuffle();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<HibbooProvider>(context);
@@ -340,7 +342,6 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
           ),
         ),
         actions: [
-          // Achievement badge indicator
           if (provider.hasAchievement)
             Padding(
               padding: const EdgeInsets.only(right: 12.0),
@@ -373,39 +374,42 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
                 child: SafeArea(
                   child: Stack(
                     children: [
-                      // Main Content
                       SingleChildScrollView(
                         padding: const EdgeInsets.all(24.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Level indicator
                             _buildLevelIndicator(provider),
                             const SizedBox(height: 16),
 
-                            // Hibboo Question Card
-                            _buildQuestionCard(context, provider),
+                            HibbooQuestionCard(
+                              questionText: provider.currentHibboo.text,
+                            ),
                             const SizedBox(height: 32),
 
-                            // Answer Input Section
-                            _buildAnswerSection(),
+                            HibbooAnswerSection(
+                              controller: _controller,
+                              onSubmit: () => _checkAnswer(provider),
+                              onRequestHint: () => _requestHint(provider),
+                            ),
                             const SizedBox(height: 24),
 
-                            // Action Buttons
-                            _buildActionButtons(provider),
+                            if (_hint != null)
+                              HintSection(scrambledLetters: _scrambledLetters),
+
                             const SizedBox(height: 24),
-
-                            // Hint Section
-                            if (_hint != null) _buildHintSection(),
-
-                            // Achievement counter
                             _buildAchievementProgress(provider),
                           ],
                         ),
                       ),
 
-                      // Confetti Overlay
-                      if (_showConfetti) _buildConfettiOverlay(),
+                      if (_showConfetti)
+                        CustomPaint(
+                          painter: ConfettiPainter(
+                            controller: _confettiController,
+                          ),
+                          child: Container(),
+                        ),
                     ],
                   ),
                 ),
@@ -414,26 +418,11 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
   }
 
   Widget _buildLevelIndicator(HibbooProvider provider) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.amber.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.star, color: Colors.amber[700], size: 16),
-          const SizedBox(width: 4),
-          Text(
-            'Level ${provider.currentLevel}',
-            style: TextStyle(
-              color: Colors.amber[700],
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
+    return RoundedBadge(
+      text: 'Level ${provider.currentLevel}',
+      backgroundColor: Colors.amber.withValues(alpha: 0.2),
+      textColor: Colors.amber[700]!,
+      icon: Icons.star,
     );
   }
 
@@ -452,33 +441,18 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
             ),
           ),
           const SizedBox(height: 8),
-          Stack(
-            children: [
-              // Progress bar background
-              Container(
-                height: 12,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              ),
-              // Progress indicator
-              FractionallySizedBox(
-                widthFactor: math.min(provider.correctAnswers / 85, 1.0),
-                child: Container(
-                  height: 12,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors:
-                          provider.hasAchievement
-                              ? [Colors.amber[400]!, Colors.amber[700]!]
-                              : [Colors.green[300]!, Colors.green[600]!],
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
-            ],
+          GradientProgressIndicator(
+            value: math.min(provider.correctAnswers / 85, 1.0),
+            height: 12,
+            borderRadius: 6,
+            startColor:
+                provider.hasAchievement
+                    ? Colors.amber[400]!
+                    : Colors.green[300]!,
+            endColor:
+                provider.hasAchievement
+                    ? Colors.amber[700]!
+                    : Colors.green[600]!,
           ),
           const SizedBox(height: 4),
           Row(
@@ -500,177 +474,6 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildQuestionCard(BuildContext context, HibbooProvider provider) {
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Colors.grey[50]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          children: [
-            const Icon(Icons.question_mark, size: 40, color: Colors.amber),
-            const SizedBox(height: 16),
-            Text(
-              provider.currentHibboo.text,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.brown[800],
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.3, end: 0);
-  }
-
-  Widget _buildAnswerSection() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: TextField(
-        controller: _controller,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: 'Type your answer here...',
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          icon: Icon(Icons.lightbulb_outline, color: Colors.amber[700]),
-        ),
-        style: const TextStyle(fontSize: 18),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(HibbooProvider provider) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: () => _checkAnswer(provider),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              elevation: 4,
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.check_circle_outline),
-                SizedBox(width: 8),
-                Text(
-                  'Submit',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        ElevatedButton(
-          onPressed: () {
-            setState(() {
-              _hint = provider.currentHibboo.answer;
-              _scrambledLetters = _hint!.split('')..shuffle();
-            });
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.amber,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            elevation: 4,
-          ),
-          child: const Icon(Icons.lightbulb),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHintSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Hint',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.amber,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children:
-                _scrambledLetters
-                    .map((letter) => _buildLetterTile(letter))
-                    .toList(),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(duration: 300.ms).scale(begin: const Offset(0.8, 0.8));
-  }
-
-  Widget _buildLetterTile(String letter) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: Colors.amber[100],
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          letter,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.brown,
-          ),
-        ),
       ),
     );
   }
@@ -705,36 +508,4 @@ class _HibbooPlayingPageState extends State<HibbooPlayingPage>
       ),
     );
   }
-
-  Widget _buildConfettiOverlay() {
-    return CustomPaint(
-      painter: ConfettiPainter(controller: _confettiController),
-      child: Container(),
-    );
-  }
-}
-
-class ConfettiPainter extends CustomPainter {
-  final AnimationController controller;
-
-  ConfettiPainter({required this.controller}) : super(repaint: controller);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint =
-        Paint()
-          ..color = Colors.amber
-          ..style = PaintingStyle.fill;
-
-    final random = math.Random();
-
-    for (var i = 0; i < 50; i++) {
-      final x = random.nextDouble() * size.width;
-      final y = random.nextDouble() * size.height;
-      canvas.drawCircle(Offset(x, y), 4, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
