@@ -1,7 +1,9 @@
 import '../../domain/entities/video.dart';
 
+/// Data model for video information, extending the base Video entity
 class VideoModel extends Video {
-  VideoModel({
+  /// Creates a new VideoModel with the specified properties
+  const VideoModel({
     required super.id,
     required super.title,
     required super.thumbnailUrl,
@@ -11,6 +13,7 @@ class VideoModel extends Video {
     super.category,
   });
 
+  /// Creates a VideoModel from a JSON map
   factory VideoModel.fromJson(Map<String, dynamic> json) {
     return VideoModel(
       id: json['id'] as String,
@@ -23,6 +26,7 @@ class VideoModel extends Video {
     );
   }
 
+  /// Converts this VideoModel to a JSON map
   Map<String, dynamic> toJson() {
     return {
       'id': id,
