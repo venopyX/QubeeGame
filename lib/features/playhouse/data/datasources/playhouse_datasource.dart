@@ -1,11 +1,14 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/video_model.dart';
 
+/// Data source for retrieving and managing playhouse video data
 class PlayhouseDatasource {
+  /// Shared preferences key for storing the last watched video ID
   static const String _lastWatchedKey = 'last_watched_video_id';
 
-  // For the MVP, we'll use hardcoded video data
-  // In a real implementation, this would come from Firebase
+  /// Retrieves a list of hardcoded video data for the MVP
+  ///
+  /// In a production app, this would be replaced with API calls
   List<VideoModel> getVideosFromData() {
     return [
       VideoModel(
@@ -128,17 +131,20 @@ class PlayhouseDatasource {
     ];
   }
 
+  /// Retrieves a list of videos, simulating an API call
   Future<List<VideoModel>> getVideos() async {
-    // In a real app, we would fetch from Firebase
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
+    // Simulate network delay in MVP (would be a real API call in production)
+    await Future.delayed(const Duration(seconds: 1));
     return getVideosFromData();
   }
 
+  /// Gets the ID of the last watched video from local storage
   Future<String?> getLastWatchedVideoId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_lastWatchedKey);
   }
 
+  /// Saves the ID of the last watched video to local storage
   Future<void> saveLastWatchedVideoId(String videoId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_lastWatchedKey, videoId);
