@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+/// A widget that displays a tree with animated features
+///
+/// The tree's appearance changes based on the growth stage and points
 class TreeWidget extends StatefulWidget {
+  /// The current growth stage of the tree
   final String stage;
+
+  /// The current growth points (0-100)
   final int growthPoints;
+
+  /// Whether to show sparkle effects around the tree
   final bool showSparkles;
 
+  /// Creates a TreeWidget
   const TreeWidget({
     super.key,
     required this.stage,
@@ -43,6 +52,23 @@ class _TreeWidgetState extends State<TreeWidget> with TickerProviderStateMixin {
     );
 
     _generateSparkles();
+
+    if (widget.showSparkles) {
+      _sparkleController.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(TreeWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.showSparkles != oldWidget.showSparkles) {
+      if (widget.showSparkles) {
+        _sparkleController.repeat(reverse: true);
+      } else {
+        _sparkleController.stop();
+      }
+    }
   }
 
   void _generateSparkles() {
@@ -116,28 +142,28 @@ class _TreeWidgetState extends State<TreeWidget> with TickerProviderStateMixin {
           ),
         ),
 
-        if (widget.showSparkles)
-          ...List.generate(_sparklePositions.length, (index) {
-            return AnimatedBuilder(
-              animation: _sparkleController,
-              builder: (context, child) {
-                return Positioned(
-                  left: _sparklePositions[index].dx + 100,
-                  top: _sparklePositions[index].dy + 200,
-                  child: FadeTransition(
-                    opacity: _sparkleController,
-                    child: const Icon(
-                      Icons.star,
-                      color: Colors.yellow,
-                      size: 20,
-                    ),
-                  ),
-                );
-              },
-            );
-          }),
+        // Sparkles
+        if (widget.showSparkles) ..._buildSparkles(),
       ],
     );
+  }
+
+  List<Widget> _buildSparkles() {
+    return List.generate(_sparklePositions.length, (index) {
+      return AnimatedBuilder(
+        animation: _sparkleController,
+        builder: (context, child) {
+          return Positioned(
+            left: _sparklePositions[index].dx + 100,
+            top: _sparklePositions[index].dy + 200,
+            child: FadeTransition(
+              opacity: _sparkleController,
+              child: const Icon(Icons.star, color: Colors.yellow, size: 20),
+            ),
+          );
+        },
+      );
+    });
   }
 
   Widget _buildTree() {
@@ -166,27 +192,29 @@ class _TreeWidgetState extends State<TreeWidget> with TickerProviderStateMixin {
   Widget _buildTreeCrown(TreeTheme theme) {
     return Stack(
       alignment: Alignment.center,
-      children: List.generate(
-        widget.growthPoints ~/ 10,
-        (index) => Transform.translate(
-          offset: Offset(math.cos(index * math.pi / 6) * 20, -index * 15),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
-            width: theme.leafSize,
-            height: theme.leafSize,
-            decoration: BoxDecoration(
-              color: theme.leafColor,
-              shape: BoxShape.circle,
+      children: [
+        ...List.generate(
+          widget.growthPoints ~/ 10,
+          (index) => Transform.translate(
+            offset: Offset(math.cos(index * math.pi / 6) * 20, -index * 15),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              width: theme.leafSize,
+              height: theme.leafSize,
+              decoration: BoxDecoration(
+                color: theme.leafColor,
+                shape: BoxShape.circle,
+              ),
             ),
           ),
         ),
-      ),
+
+        ...theme.specialFeatures,
+      ],
     );
   }
 
   TreeTheme _getTreeTheme() {
-    // Using a switch with fallthrough to make it easy to extend
-    // with more levels in the future
     switch (widget.stage) {
       case 'Grand Tree':
         return TreeTheme(
@@ -196,7 +224,6 @@ class _TreeWidgetState extends State<TreeWidget> with TickerProviderStateMixin {
           trunkColor: Colors.brown[700]!,
           leafColor: Colors.green[700]!,
           specialFeatures: [
-            // Add special decorations for Grand Tree
             Positioned(
               top: -20,
               child: Icon(
@@ -215,7 +242,6 @@ class _TreeWidgetState extends State<TreeWidget> with TickerProviderStateMixin {
           trunkColor: Colors.brown[600]!,
           leafColor: Colors.green[600]!,
           specialFeatures: [
-            // Add special decorations for Mature Tree
             Positioned(
               bottom: 50,
               right: 30,
@@ -259,16 +285,28 @@ class _TreeWidgetState extends State<TreeWidget> with TickerProviderStateMixin {
   }
 }
 
+/// Theme configuration for tree appearance
 class TreeTheme {
+  /// Height of the tree trunk
   final double trunkHeight;
-  final double trunkWidth;
-  final double leafSize;
-  final Color trunkColor;
-  final Color leafColor;
-  final List<Widget>
-  specialFeatures; // Added to support level-specific decorations
 
-  TreeTheme({
+  /// Width of the tree trunk
+  final double trunkWidth;
+
+  /// Size of each leaf
+  final double leafSize;
+
+  /// Color of the tree trunk
+  final Color trunkColor;
+
+  /// Color of the tree leaves
+  final Color leafColor;
+
+  /// Special decorative elements based on tree stage
+  final List<Widget> specialFeatures;
+
+  /// Creates a TreeTheme with the specified properties
+  const TreeTheme({
     required this.trunkHeight,
     required this.trunkWidth,
     required this.leafSize,
@@ -278,6 +316,7 @@ class TreeTheme {
   });
 }
 
+/// CustomPainter for drawing clouds in the sky background
 class CloudPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
