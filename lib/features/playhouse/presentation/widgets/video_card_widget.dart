@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/video.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../domain/entities/video.dart';
 
+/// A card widget that displays video information
+///
+/// Used in the playhouse dashboard to show available videos with thumbnails
 class VideoCardWidget extends StatelessWidget {
+  /// The video to display
   final Video video;
+
+  /// Callback when the card is tapped
   final VoidCallback onTap;
 
+  /// Creates a VideoCardWidget
   const VideoCardWidget({super.key, required this.video, required this.onTap});
 
   @override
@@ -67,7 +74,7 @@ class VideoCardWidget extends StatelessWidget {
                           ),
                           child: Text(
                             video.category!,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -82,7 +89,7 @@ class VideoCardWidget extends StatelessWidget {
                               padding: const EdgeInsets.only(right: 6),
                               child: Chip(
                                 label: Text(tag),
-                                labelStyle: TextStyle(fontSize: 10),
+                                labelStyle: const TextStyle(fontSize: 10),
                                 materialTapTargetSize:
                                     MaterialTapTargetSize.shrinkWrap,
                                 visualDensity: VisualDensity.compact,
@@ -108,16 +115,23 @@ class VideoCardWidget extends StatelessWidget {
     );
   }
 
+  /// Gets a color for the category badge based on category name
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
       case 'basics':
         return Colors.blue;
       case 'stories':
         return Colors.purple;
-      case 'vocabulary':
+      case 'songs':
         return Colors.green;
       case 'culture':
         return Colors.orange;
+      case 'games':
+        return Colors.red;
+      case 'tutorials':
+        return Colors.teal;
+      case 'vocabulary':
+        return Colors.green;
       default:
         return Colors.grey;
     }
