@@ -2,10 +2,13 @@ import '../../domain/entities/video.dart';
 import '../../domain/repositories/playhouse_repository.dart';
 import '../datasources/playhouse_datasource.dart';
 
+/// Implementation of the PlayhouseRepository interface
 class PlayhouseRepositoryImpl implements PlayhouseRepository {
+  /// Data source for retrieving video data
   final PlayhouseDatasource datasource;
 
-  PlayhouseRepositoryImpl(this.datasource);
+  /// Creates a new PlayhouseRepositoryImpl with the specified data source
+  const PlayhouseRepositoryImpl(this.datasource);
 
   @override
   Future<List<Video>> getVideos() async {
