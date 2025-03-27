@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import '../providers/playhouse_provider.dart';
 import '../widgets/video_player_widget.dart';
 
+/// Page for playing videos with a full-screen player
 class PlayhousePlayingPage extends StatefulWidget {
+  /// Creates a PlayhousePlayingPage
   const PlayhousePlayingPage({super.key});
 
   @override
@@ -21,9 +23,7 @@ class _PlayhousePlayingPageState extends State<PlayhousePlayingPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pop();
       });
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return VideoPlayerWidget(
