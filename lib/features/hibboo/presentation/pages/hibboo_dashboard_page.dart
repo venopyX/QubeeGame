@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/hibboo_provider.dart';
-import '../widgets/tree_widget.dart';
+import '../widgets/lottie_tree_widget.dart';
 import '../widgets/achievement_progress_card.dart';
 import '../../../../app/routes/app_routes.dart';
 import '../../../../shared/widgets/rounded_badge.dart';
@@ -64,7 +64,7 @@ class HibbooDashboardPage extends StatelessWidget {
               Expanded(
                 child: Stack(
                   children: [
-                    TreeWidget(
+                    LottieTreeWidget(
                       stage: provider.currentStage,
                       growthPoints: provider.growthPoints,
                       showSparkles: provider.growthPoints > 0,
