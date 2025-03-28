@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/word_matching_provider.dart';
@@ -191,11 +193,13 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
                 isMatched: isMatched,
                 isTarget: true, // Image card
                 onTap: (_) {
-                  print("Target card tapped: ${pair.id}");
+                  developer.log("Target card tapped: ${pair.id}");
                   if (_selectedWordId != null) {
                     // Check if selected word matches target
                     if (_selectedWordId == pair.id) {
-                      print("MATCH FOUND: $_selectedWordId matches ${pair.id}");
+                      developer.log(
+                        "MATCH FOUND: $_selectedWordId matches ${pair.id}",
+                      );
                       // Update matched status in the provider
                       setState(() {
                         matched[pair.id] = true;
@@ -206,11 +210,11 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
 
                       // Check if all words are matched
                       if (provider.isAllMatched()) {
-                        print("ALL MATCHED - Completing game!");
+                        developer.log("ALL MATCHED - Completing game!");
                         provider.completeGame();
                       }
                     } else {
-                      print(
+                      developer.log(
                         "NO MATCH: $_selectedWordId doesn't match ${pair.id}",
                       );
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -277,7 +281,7 @@ class _WordMatchingGamePageState extends State<WordMatchingGamePage> {
 
                       return GestureDetector(
                         onTap: () {
-                          print("Word tapped: ${pair.id}");
+                          developer.log("Word tapped: ${pair.id}");
                           setState(() {
                             _selectedWordId = isSelected ? null : pair.id;
                           });
