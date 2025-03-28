@@ -1,30 +1,35 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/qubee.dart';
 
+/// A card widget displaying a Qubee letter with its status
+///
+/// Shows the letter with visual indicators for locked, unlocked,
+/// or completed status, and additional details like accuracy.
 class QubeeLetterCardWidget extends StatelessWidget {
+  /// The Qubee letter to display
   final Qubee letter;
+
+  /// Callback when the card is tapped
   final VoidCallback? onTap;
-  
-  const QubeeLetterCardWidget({
-    required this.letter,
-    this.onTap,
-    super.key,
-  });
+
+  /// Creates a QubeeLetterCardWidget
+  const QubeeLetterCardWidget({required this.letter, this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {
     final bool isLocked = !letter.isUnlocked;
     final bool isCompleted = letter.isCompleted;
     final bool isInProgress = letter.isUnlocked && !isCompleted;
-    
+
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isCompleted 
-              ? Colors.green 
-              : (isLocked ? Colors.grey[300]! : Colors.blue[300]!),
+          color:
+              isCompleted
+                  ? Colors.green
+                  : (isLocked ? Colors.grey[300]! : Colors.blue[300]!),
           width: isCompleted ? 2 : 1,
         ),
       ),
@@ -63,40 +68,47 @@ class QubeeLetterCardWidget extends StatelessWidget {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 8),
-                  
-                  // Status indicator with improved visualization
+
+                  // Status indicator
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: isLocked 
-                          ? Colors.grey[200]
-                          : (isCompleted ? Colors.green[50] : Colors.orange[50]),
+                      color:
+                          isLocked
+                              ? Colors.grey[200]
+                              : (isCompleted
+                                  ? Colors.green[50]
+                                  : Colors.orange[50]),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      isLocked 
+                      isLocked
                           ? '${letter.requiredPoints} pts to unlock'
                           : (isCompleted ? 'Completed' : 'Available'),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: isLocked 
-                            ? Colors.grey[600]
-                            : (isCompleted ? Colors.green : Colors.orange),
+                        color:
+                            isLocked
+                                ? Colors.grey[600]
+                                : (isCompleted ? Colors.green : Colors.orange),
                       ),
                     ),
                   ),
-                  
-                  // Accuracy
+
+                  // Accuracy display
                   if (isCompleted && letter.tracingAccuracy > 0)
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.stars_rounded,
                             color: Colors.amber,
                             size: 14,
@@ -112,7 +124,7 @@ class QubeeLetterCardWidget extends StatelessWidget {
                         ],
                       ),
                     ),
-                  
+
                   // Practice count
                   if (letter.practiceCount > 0)
                     Padding(
@@ -129,31 +141,35 @@ class QubeeLetterCardWidget extends StatelessWidget {
                 ],
               ),
             ),
-            
-            // Status icon with improved visuals
+
+            // Status icon
             Positioned(
               top: 8,
               right: 8,
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: isLocked 
-                      ? Colors.grey[200]
-                      : (isCompleted ? Colors.green[100] : Colors.blue[100]),
+                  color:
+                      isLocked
+                          ? Colors.grey[200]
+                          : (isCompleted
+                              ? Colors.green[100]
+                              : Colors.blue[100]),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  isLocked 
+                  isLocked
                       ? Icons.lock
                       : (isCompleted ? Icons.check_circle : Icons.play_circle),
-                  color: isLocked 
-                      ? Colors.grey
-                      : (isCompleted ? Colors.green : Colors.blue),
+                  color:
+                      isLocked
+                          ? Colors.grey
+                          : (isCompleted ? Colors.green : Colors.blue),
                   size: 20,
                 ),
               ),
             ),
-            
+
             // Progress indicator for letters in progress
             if (isInProgress && letter.tracingAccuracy > 0)
               Positioned(
@@ -163,7 +179,7 @@ class QubeeLetterCardWidget extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: letter.tracingAccuracy,
                   backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                   minHeight: 4,
                   borderRadius: BorderRadius.circular(2),
                 ),
