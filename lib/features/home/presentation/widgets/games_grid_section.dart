@@ -20,10 +20,18 @@ class GamesGridSection extends StatelessWidget {
         routeName: AppRoutes.playhouseDashboard,
       ),
       GameInfo(
+        title: 'Word Matching',
+        description: 'Match Oromo words with their meanings',
+        icon: Icons.school,
+        color: Colors.purple,
+        comingSoon: false,
+        routeName: AppRoutes.wordMatchingGame,
+      ),
+      GameInfo(
         title: 'Word Weaver',
         description: 'Create words from Qubee letters',
         icon: Icons.abc,
-        color: Colors.purple,
+        color: Colors.pink,
         comingSoon: true,
       ),
       GameInfo(
