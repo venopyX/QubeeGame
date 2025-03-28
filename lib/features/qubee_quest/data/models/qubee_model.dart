@@ -1,6 +1,8 @@
 import '../../domain/entities/qubee.dart';
 
+/// Data model for Qubee letter with JSON serialization capabilities
 class QubeeModel extends Qubee {
+  /// Creates a QubeeModel with the provided values
   QubeeModel({
     required super.id,
     required super.letter,
@@ -19,6 +21,7 @@ class QubeeModel extends Qubee {
     super.practiceCount,
   });
 
+  /// Creates a QubeeModel from a JSON map
   factory QubeeModel.fromJson(Map<String, dynamic> json) {
     return QubeeModel(
       id: json['id'],
@@ -28,10 +31,9 @@ class QubeeModel extends Qubee {
       pronunciation: json['pronunciation'],
       soundPath: json['soundPath'],
       tracingPoints: List<Map<String, double>>.from(
-        json['tracingPoints'].map((point) => {
-          'x': point['x'].toDouble(),
-          'y': point['y'].toDouble(),
-        }),
+        json['tracingPoints'].map(
+          (point) => {'x': point['x'].toDouble(), 'y': point['y'].toDouble()},
+        ),
       ),
       unlockedWords: List<String>.from(json['unlockedWords']),
       exampleSentence: json['exampleSentence'] ?? '',
@@ -44,6 +46,7 @@ class QubeeModel extends Qubee {
     );
   }
 
+  /// Converts the model to a JSON map
   Map<String, dynamic> toJson() {
     return {
       'id': id,
