@@ -1,7 +1,9 @@
 import '../../domain/entities/qubee.dart';
 import 'qubee_tracing_points.dart';
 
+/// Generator for Qubee letters with educational content
 class QubeeLetterGenerator {
+  /// Generates the basic set of Qubee letters with educational details
   static List<Qubee> generateBasicLetters() {
     return [
       // Letter A
@@ -19,7 +21,7 @@ class QubeeLetterGenerator {
         requiredPoints: 0,
         isUnlocked: true,
       ),
-      
+
       // Letter B
       Qubee(
         id: 2,
@@ -35,7 +37,7 @@ class QubeeLetterGenerator {
         requiredPoints: 500,
         isUnlocked: false,
       ),
-      
+
       // Letter C
       Qubee(
         id: 3,
@@ -51,7 +53,7 @@ class QubeeLetterGenerator {
         requiredPoints: 1000,
         isUnlocked: false,
       ),
-      
+
       // Letter D
       Qubee(
         id: 4,
@@ -67,7 +69,7 @@ class QubeeLetterGenerator {
         requiredPoints: 2000,
         isUnlocked: false,
       ),
-      
+
       // Letter E
       Qubee(
         id: 5,
@@ -83,7 +85,7 @@ class QubeeLetterGenerator {
         requiredPoints: 3000,
         isUnlocked: false,
       ),
-      
+
       // Letter F
       Qubee(
         id: 6,
@@ -99,7 +101,7 @@ class QubeeLetterGenerator {
         requiredPoints: 4000,
         isUnlocked: false,
       ),
-      
+
       // Letter G
       Qubee(
         id: 7,
@@ -115,7 +117,7 @@ class QubeeLetterGenerator {
         requiredPoints: 6000,
         isUnlocked: false,
       ),
-      
+
       // Letter H
       Qubee(
         id: 8,
@@ -131,7 +133,7 @@ class QubeeLetterGenerator {
         requiredPoints: 7500,
         isUnlocked: false,
       ),
-      
+
       // Letter I
       Qubee(
         id: 9,
@@ -147,7 +149,7 @@ class QubeeLetterGenerator {
         requiredPoints: 9000,
         isUnlocked: false,
       ),
-      
+
       // Letter J
       Qubee(
         id: 10,
@@ -163,7 +165,7 @@ class QubeeLetterGenerator {
         requiredPoints: 10000,
         isUnlocked: false,
       ),
-      
+
       // Letter K
       Qubee(
         id: 11,
@@ -179,7 +181,7 @@ class QubeeLetterGenerator {
         requiredPoints: 11000,
         isUnlocked: false,
       ),
-      
+
       // Letter L
       Qubee(
         id: 12,
@@ -195,7 +197,7 @@ class QubeeLetterGenerator {
         requiredPoints: 12000,
         isUnlocked: false,
       ),
-      
+
       // Letter M
       Qubee(
         id: 13,
@@ -211,7 +213,7 @@ class QubeeLetterGenerator {
         requiredPoints: 13000,
         isUnlocked: false,
       ),
-      
+
       // Letter N
       Qubee(
         id: 14,
@@ -227,7 +229,7 @@ class QubeeLetterGenerator {
         requiredPoints: 14000,
         isUnlocked: false,
       ),
-      
+
       // Letter O
       Qubee(
         id: 15,
@@ -243,7 +245,7 @@ class QubeeLetterGenerator {
         requiredPoints: 15000,
         isUnlocked: false,
       ),
-      
+
       // Letter P
       Qubee(
         id: 16,
@@ -259,7 +261,7 @@ class QubeeLetterGenerator {
         requiredPoints: 16000,
         isUnlocked: false,
       ),
-      
+
       // Letter Q
       Qubee(
         id: 17,
@@ -275,7 +277,7 @@ class QubeeLetterGenerator {
         requiredPoints: 17000,
         isUnlocked: false,
       ),
-      
+
       // Letter R
       Qubee(
         id: 18,
@@ -291,7 +293,7 @@ class QubeeLetterGenerator {
         requiredPoints: 18000,
         isUnlocked: false,
       ),
-      
+
       // Letter S
       Qubee(
         id: 19,
@@ -307,7 +309,7 @@ class QubeeLetterGenerator {
         requiredPoints: 19000,
         isUnlocked: false,
       ),
-      
+
       // Letter T
       Qubee(
         id: 20,
@@ -323,7 +325,7 @@ class QubeeLetterGenerator {
         requiredPoints: 20000,
         isUnlocked: false,
       ),
-      
+
       // Letter U
       Qubee(
         id: 21,
@@ -339,7 +341,7 @@ class QubeeLetterGenerator {
         requiredPoints: 21500,
         isUnlocked: false,
       ),
-      
+
       // Letter V
       Qubee(
         id: 22,
@@ -355,7 +357,7 @@ class QubeeLetterGenerator {
         requiredPoints: 22500,
         isUnlocked: false,
       ),
-      
+
       // Letter W
       Qubee(
         id: 23,
@@ -371,7 +373,7 @@ class QubeeLetterGenerator {
         requiredPoints: 23000,
         isUnlocked: false,
       ),
-      
+
       // Letter X
       Qubee(
         id: 24,
@@ -387,7 +389,7 @@ class QubeeLetterGenerator {
         requiredPoints: 24000,
         isUnlocked: false,
       ),
-      
+
       // Letter Y
       Qubee(
         id: 25,
@@ -403,7 +405,7 @@ class QubeeLetterGenerator {
         requiredPoints: 25000,
         isUnlocked: false,
       ),
-      
+
       // Letter Z
       Qubee(
         id: 26,

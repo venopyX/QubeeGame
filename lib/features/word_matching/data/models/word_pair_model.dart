@@ -1,7 +1,9 @@
 import '../../domain/entities/word_pair.dart';
 
+/// Data model for word pairs with JSON serialization capabilities
 class WordPairModel extends WordPair {
-  WordPairModel({
+  /// Creates a new WordPairModel
+  const WordPairModel({
     required super.id,
     required super.word,
     required super.meaning,
@@ -10,6 +12,7 @@ class WordPairModel extends WordPair {
     super.difficulty,
   });
 
+  /// Creates a WordPairModel from a JSON object
   factory WordPairModel.fromJson(Map<String, dynamic> json) {
     return WordPairModel(
       id: json['id'] as String,
@@ -21,6 +24,7 @@ class WordPairModel extends WordPair {
     );
   }
 
+  /// Converts this model to a JSON object
   Map<String, dynamic> toJson() {
     return {
       'id': id,

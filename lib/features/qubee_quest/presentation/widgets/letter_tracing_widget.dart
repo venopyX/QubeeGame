@@ -3,11 +3,21 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import '../../domain/entities/qubee.dart';
 
+/// Widget for letter tracing with visual guidance and accuracy detection
+///
+/// Allows users to trace a letter with their finger, showing visual feedback
+/// and measuring tracing accuracy.
 class LetterTracingWidget extends StatefulWidget {
+  /// Qubee letter to trace
   final Qubee letter;
+
+  /// Callback when accuracy value changes
   final ValueChanged<double> onAccuracyChanged;
+
+  /// Callback when tracing is completed
   final void Function(double accuracy, double pathCoverage) onCompleted;
 
+  /// Creates a LetterTracingWidget
   const LetterTracingWidget({
     required this.letter,
     required this.onAccuracyChanged,
@@ -21,29 +31,64 @@ class LetterTracingWidget extends StatefulWidget {
 
 class _LetterTracingWidgetState extends State<LetterTracingWidget>
     with SingleTickerProviderStateMixin {
+  /// All points where the user has touched the screen
   final List<Offset> _userPoints = [];
+
+  /// Guide points for the letter, scaled to the widget size
   final List<Offset> _guidePoints = [];
+
+  /// All completed user strokes
   final List<List<Offset>> _userStrokes = [];
+
+  /// The current in-progress stroke
   List<Offset> _currentStroke = [];
+
+  /// Whether the user is currently tracing
   bool _isTracing = false;
+
+  /// Overall progress from 0.0 to 1.0
   double _progress = 0.0;
+
+  /// Accuracy of the user's tracing from 0.0 to 1.0
   double _accuracy = 0.0;
+
+  /// Percentage of the path that has been covered
   double _pathCoverage = 0.0;
+
+  /// Whether completion requirements are met
   bool _canComplete = false;
+
+  /// Whether to show the guidance path
   bool _showGuide = true;
+
+  /// Current segment being traced
   int _currentSegment = 0;
+
+  /// Feedback message to show to the user
   String _feedbackMessage = 'Follow the blue path';
+
+  /// Color for the feedback message
   Color _feedbackColor = Colors.blue;
 
-  // ignore: unused_field
+  /// ID of the current letter being traced
   late int _currentLetterId;
 
+  /// Animation controller for pulsing effects
   late AnimationController _pulseController;
+
+  /// Animation for the pulsing effect
   late Animation<double> _pulseAnimation;
 
+  /// How close the user's trace needs to be to the guidance path
   static const double _proximityThreshold = 15.0;
+
+  /// Progress threshold for completion
   static const double _completionThreshold = 0.65;
+
+  /// Minimum path coverage required for completion
   static const double _pathCoverageMinimum = 0.80;
+
+  /// Penalty applied for points that are off the path
   static const double _penaltyForOffPath = 0.03;
 
   @override
@@ -72,6 +117,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     }
   }
 
+  /// Resets all state variables for a new letter
   void _resetForNewLetter() {
     _currentLetterId = widget.letter.id;
 
@@ -98,6 +144,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     super.dispose();
   }
 
+  /// Updates guide points based on the widget size
   void _updateGuidePointsWithSize(Size size) {
     _guidePoints.clear();
     for (var point in widget.letter.tracingPoints) {
@@ -107,6 +154,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     }
   }
 
+  /// Handles start of a tracing gesture
   void _handlePanStart(DragStartDetails details) {
     setState(() {
       _isTracing = true;
@@ -116,12 +164,14 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     });
   }
 
+  /// Handles updates during a tracing gesture
   void _handlePanUpdate(DragUpdateDetails details) {
     if (_isTracing) {
       if (_currentStroke.isNotEmpty) {
         final lastPoint = _currentStroke.last;
         final distance = (details.localPosition - lastPoint).distance;
 
+        // Skip points that are too close to avoid over-sampling
         if (distance < 5.0) {
           return;
         }
@@ -130,12 +180,12 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
         _currentStroke.add(details.localPosition);
         _userPoints.add(details.localPosition);
         _updateProgress();
-
         _updateFeedbackMessage();
       });
     }
   }
 
+  /// Handles end of a tracing gesture
   void _handlePanEnd(DragEndDetails details) {
     if (_isTracing && _currentStroke.isNotEmpty) {
       setState(() {
@@ -148,6 +198,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     }
   }
 
+  /// Updates the feedback message based on current progress
   void _updateFeedbackMessage() {
     if (_pathCoverage < 0.3) {
       _feedbackMessage = 'Keep tracing the letter';
@@ -167,6 +218,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     }
   }
 
+  /// Updates progress, accuracy, and path coverage metrics
   void _updateProgress() {
     if (_guidePoints.isEmpty) return;
 
@@ -273,6 +325,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     }
   }
 
+  /// Clears all tracing data and resets progress
   void _resetTracing() {
     setState(() {
       _userPoints.clear();
@@ -287,6 +340,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     });
   }
 
+  /// Calculates which segments of the path have been covered
   List<bool> _calculateSegmentsCovered() {
     if (_guidePoints.length < 2) return [];
 
@@ -339,6 +393,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     return segmentsCovered;
   }
 
+  /// Updates which segment the user is currently tracing
   void _updateCurrentSegment() {
     if (_userPoints.isEmpty || _guidePoints.length < 2) return;
 
@@ -364,6 +419,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     }
   }
 
+  /// Calculates distance from a point to a line segment
   double _distanceToLineSegment(Offset point, Offset start, Offset end) {
     double l2 = _distanceSquared(start, end);
 
@@ -381,6 +437,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     return (point - projection).distance;
   }
 
+  /// Calculates squared distance between two points
   double _distanceSquared(Offset a, Offset b) {
     return (b - a).distanceSquared;
   }
@@ -401,7 +458,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withAlpha(51),
+                color: Colors.grey.withValues(alpha: 0.2),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -654,15 +711,30 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
   }
 }
 
+/// Custom painter for rendering the letter trace and guide path
 class LetterTracePainter extends CustomPainter {
+  /// Guide points defining the letter shape
   final List<Offset> guidePoints;
+
+  /// All points where the user has touched
   final List<Offset> userPoints;
+
+  /// All completed user strokes
   final List<List<Offset>> userStrokes;
+
+  /// The current in-progress stroke
   final List<Offset> currentStroke;
+
+  /// Whether to show the guide path
   final bool showGuide;
+
+  /// Current pulse animation value
   final double pulseValue;
+
+  /// Current segment being traced
   final int currentSegment;
 
+  /// Creates a LetterTracePainter
   LetterTracePainter({
     required this.guidePoints,
     required this.userPoints,
@@ -679,7 +751,7 @@ class LetterTracePainter extends CustomPainter {
 
     final bgPaint =
         Paint()
-          ..color = Colors.grey.withAlpha(15)
+          ..color = Colors.grey.withValues(alpha: 0.06)
           ..style = PaintingStyle.fill;
 
     canvas.drawRect(Offset.zero & size, bgPaint);
@@ -699,12 +771,13 @@ class LetterTracePainter extends CustomPainter {
     }
   }
 
+  /// Draws the background of the letter
   void _drawLetterBackground(Canvas canvas, Size size) {
     if (guidePoints.length < 2) return;
 
     final bgPaint =
         Paint()
-          ..color = Colors.grey.withAlpha(40)
+          ..color = Colors.grey.withValues(alpha: 0.16)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 20.0
           ..strokeCap = StrokeCap.round
@@ -720,6 +793,7 @@ class LetterTracePainter extends CustomPainter {
     canvas.drawPath(bgPath, bgPaint);
   }
 
+  /// Draws the guide path with dots and arrows
   void _drawGuidePath(Canvas canvas) {
     for (int i = 0; i < guidePoints.length - 1; i++) {
       final bool isCurrentSegment = (i == currentSegment);
@@ -728,8 +802,8 @@ class LetterTracePainter extends CustomPainter {
           Paint()
             ..color =
                 isCurrentSegment
-                    ? Colors.blue.withAlpha(204)
-                    : Colors.blue.withAlpha(102)
+                    ? Colors.blue.withValues(alpha: 0.8)
+                    : Colors.blue.withValues(alpha: 0.4)
             ..style = PaintingStyle.stroke
             ..strokeWidth = isCurrentSegment ? 6.0 * pulseValue : 4.0
             ..strokeCap = StrokeCap.round
@@ -744,7 +818,7 @@ class LetterTracePainter extends CustomPainter {
       Color dotColor =
           isStart
               ? Colors.green
-              : (isEnd ? Colors.red : Colors.blue.withAlpha(153));
+              : (isEnd ? Colors.red : Colors.blue.withValues(alpha: 0.6));
 
       canvas.drawCircle(guidePoints[i], dotSize, Paint()..color = dotColor);
 
@@ -771,6 +845,7 @@ class LetterTracePainter extends CustomPainter {
     }
   }
 
+  /// Draws an arrow indicating tracing direction
   void _drawArrow(Canvas canvas, Offset position, double angle) {
     const arrowSize = 10.0;
 
@@ -793,6 +868,7 @@ class LetterTracePainter extends CustomPainter {
     canvas.restore();
   }
 
+  /// Draws a user's stroke
   void _drawUserStroke(Canvas canvas, List<Offset> stroke) {
     if (stroke.length < 2) return;
 

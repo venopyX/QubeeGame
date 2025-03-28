@@ -15,12 +15,14 @@ import '../../features/word_matching/data/repositories/word_matching_repository_
 import '../../features/word_matching/domain/usecases/get_word_pairs.dart';
 import '../../features/word_matching/presentation/providers/word_matching_provider.dart';
 
-// Singleton instances for Providers
+/// Initializes application-wide dependencies
 void setupDependencies() {
-  // Add more providers here as your app grows
+  // Add more initialization logic here as your app grows
 }
 
-// Root widget with MultiProvider
+/// A list of providers for the MultiProvider widget
+///
+/// This provides application-wide state management through Provider pattern
 List<SingleChildWidget> get providers => [
   ChangeNotifierProvider(
     create: (_) {
@@ -30,13 +32,9 @@ List<SingleChildWidget> get providers => [
       return HibbooProvider(getHibbooList);
     },
   ),
-  
-  // Updated QubeeQuestProvider that doesn't require use cases
-  ChangeNotifierProvider(
-    create: (_) => QubeeQuestProvider(),
-  ),
 
-  // Add Playhouse Provider (updated for new implementation)
+  ChangeNotifierProvider(create: (_) => QubeeQuestProvider()),
+
   ChangeNotifierProvider(
     create: (_) {
       final datasource = PlayhouseDatasource();
@@ -47,7 +45,6 @@ List<SingleChildWidget> get providers => [
     },
   ),
 
-  // Add Word Matching Provider
   ChangeNotifierProvider(
     create: (_) {
       final datasource = WordMatchingDatasource();
@@ -56,5 +53,4 @@ List<SingleChildWidget> get providers => [
       return WordMatchingProvider(getWordPairs);
     },
   ),
-  // Add other providers here later (e.g., AuthProvider, GameProvider)
 ];

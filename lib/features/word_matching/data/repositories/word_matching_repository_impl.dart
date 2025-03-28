@@ -2,10 +2,13 @@ import '../../domain/entities/word_pair.dart';
 import '../../domain/repositories/word_matching_repository.dart';
 import '../datasources/word_matching_datasource.dart';
 
+/// Implementation of WordMatchingRepository
 class WordMatchingRepositoryImpl implements WordMatchingRepository {
+  /// Data source for word pairs and game statistics
   final WordMatchingDatasource datasource;
 
-  WordMatchingRepositoryImpl(this.datasource);
+  /// Creates a new WordMatchingRepositoryImpl
+  const WordMatchingRepositoryImpl(this.datasource);
 
   @override
   Future<List<WordPair>> getWordPairs() async {

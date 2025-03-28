@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'di/setup.dart';
 import 'routes/app_routes.dart';
-import '../../features/home/presentation/pages/home_page.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../features/home/presentation/pages/home_page.dart';
+import '../shared/themes/app_theme.dart';
 
+/// The main application widget for QubeeGames.
+///
+/// This widget is the root of the application and sets up the theme,
+/// providers, and initial routes.
 class QubeeGameApp extends StatelessWidget {
   const QubeeGameApp({super.key});
 
@@ -15,45 +19,10 @@ class QubeeGameApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'QubeeGames',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.light,
-          ),
-          textTheme: GoogleFonts.nunitoTextTheme(),
-          useMaterial3: true,
-          cardTheme: const CardTheme(
-            clipBehavior: Clip.antiAlias,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-          appBarTheme: AppBarTheme(
-            backgroundColor: Colors.blue[700],
-            foregroundColor: Colors.white,
-            centerTitle: true,
-          ),
-        ),
-        darkTheme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
-          ),
-          textTheme: GoogleFonts.nunitoTextTheme(
-            ThemeData(brightness: Brightness.dark).textTheme,
-          ),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.lightTheme(),
+        darkTheme: AppTheme.darkTheme(),
         themeMode: ThemeMode.system,
-        home: const HomePage(), // Set home page
+        home: const HomePage(),
         onGenerateRoute: AppRoutes.generateRoute,
       ),
     );

@@ -5,11 +5,20 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart' as mobile;
 import 'package:youtube_player_iframe/youtube_player_iframe.dart' as web;
 import '../../domain/entities/video.dart';
 
+/// A widget that plays videos from YouTube
+///
+/// Handles both mobile and web platforms with appropriate player implementations
 class VideoPlayerWidget extends StatefulWidget {
+  /// The video to play
   final Video video;
+
+  /// Callback triggered when the video completes playback
   final VoidCallback onComplete;
+
+  /// Callback triggered when the user closes the player
   final VoidCallback onClose;
 
+  /// Creates a VideoPlayerWidget
   const VideoPlayerWidget({
     super.key,
     required this.video,
@@ -22,9 +31,16 @@ class VideoPlayerWidget extends StatefulWidget {
 }
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
-  dynamic _controller; // Dynamic type to hold either controller
+  /// Controller for the YouTube player (dynamic type to handle both web and mobile)
+  dynamic _controller;
+
+  /// Whether the player has been initialized
   bool _isInitialized = false;
+
+  /// Whether to show the player controls overlay
   bool _showControls = true;
+
+  /// Whether the video has finished playing
   bool _isFinished = false;
 
   @override
@@ -32,19 +48,19 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     super.initState();
 
     if (kIsWeb) {
-      // Web: Use youtube_player_iframe
+      // Initialize web player (youtube_player_iframe)
       _controller = web.YoutubePlayerController.fromVideoId(
         videoId: widget.video.videoId,
         autoPlay: true,
         params: const web.YoutubePlayerParams(
           mute: false,
-          showControls: false, // We'll implement custom controls
+          showControls: false,
           showFullscreenButton: true,
           enableCaption: false,
         ),
       )..listen(_videoListenerWeb);
     } else if (Platform.isAndroid || Platform.isIOS) {
-      // Mobile: Use youtube_player_flutter
+      // Initialize mobile player (youtube_player_flutter)
       _controller = mobile.YoutubePlayerController(
         initialVideoId: widget.video.videoId,
         flags: const mobile.YoutubePlayerFlags(
@@ -62,6 +78,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     _initializeVideo();
   }
 
+  /// Initializes the video player and sets up auto-hide for controls
   Future<void> _initializeVideo() async {
     setState(() {
       _isInitialized = true;
@@ -77,7 +94,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     });
   }
 
-  // Listener for mobile (youtube_player_flutter)
+  /// Listener for the mobile player (youtube_player_flutter)
   void _videoListenerMobile() {
     if (_controller.value.playerState == mobile.PlayerState.ended) {
       if (!_isFinished) {
@@ -94,7 +111,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     }
   }
 
-  // Listener for web (youtube_player_iframe)
+  /// Listener for the web player (youtube_player_iframe)
   void _videoListenerWeb(web.YoutubePlayerValue value) {
     if (value.playerState == web.PlayerState.ended) {
       if (!_isFinished) {
@@ -111,6 +128,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     }
   }
 
+  /// Toggles play/pause state of the video
   void _togglePlayPause() {
     if (kIsWeb) {
       _controller.value.playerState == web.PlayerState.playing
@@ -122,6 +140,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     setState(() {}); // Update UI for play/pause icon
   }
 
+  /// Gets whether the video is currently playing
   bool _getIsPlaying() {
     if (kIsWeb) {
       return _controller.value.playerState == web.PlayerState.playing;
@@ -130,6 +149,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     }
   }
 
+  /// Shows or hides the player controls overlay
   void _toggleControls() {
     setState(() {
       _showControls = !_showControls;
@@ -143,35 +163,41 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       body: SafeArea(
         child: Stack(
           children: [
+            // Video Player
             Center(
-              child: _isInitialized
-                  ? GestureDetector(
-                      onTap: _toggleControls,
-                      child: kIsWeb
-                          ? web.YoutubePlayer(
-                              controller: _controller,
-                              aspectRatio: 16 / 9,
-                            )
-                          : mobile.YoutubePlayer(
-                              controller: _controller,
-                              showVideoProgressIndicator: true,
-                              progressColors: const mobile.ProgressBarColors(
-                                playedColor: Colors.blue,
-                                handleColor: Colors.blueAccent,
-                              ),
-                            ),
-                    )
-                  : const Center(child: CircularProgressIndicator()),
+              child:
+                  _isInitialized
+                      ? GestureDetector(
+                        onTap: _toggleControls,
+                        child:
+                            kIsWeb
+                                ? web.YoutubePlayer(
+                                  controller: _controller,
+                                  aspectRatio: 16 / 9,
+                                )
+                                : mobile.YoutubePlayer(
+                                  controller: _controller,
+                                  showVideoProgressIndicator: true,
+                                  progressColors:
+                                      const mobile.ProgressBarColors(
+                                        playedColor: Colors.blue,
+                                        handleColor: Colors.blueAccent,
+                                      ),
+                                ),
+                      )
+                      : const Center(child: CircularProgressIndicator()),
             ),
-            
+
+            // Controls Overlay
             if (_showControls)
               Positioned.fill(
                 child: GestureDetector(
                   onTap: _toggleControls,
                   child: Container(
-                    color: Colors.black.withAlpha((0.4 * 255).toInt()),
+                    color: Colors.black.withValues(alpha: 0.4),
                     child: Column(
                       children: [
+                        // Title bar and close button
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16.0,
@@ -203,6 +229,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                           ),
                         ),
                         const Spacer(),
+                        // Play/pause button
                         IconButton(
                           icon: Icon(
                             _getIsPlaying()
@@ -214,9 +241,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                           onPressed: _togglePlayPause,
                         ),
                         const Spacer(),
+                        // Next video indicator
                         if (_isFinished)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 20.0),
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 20.0),
                             child: Text(
                               "Playing next video shortly...",
                               style: TextStyle(

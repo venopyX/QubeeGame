@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/hibboo_provider.dart';
-import '../widgets/lottie_tree_widget.dart'; // Updated import
+import '../widgets/tree_widget.dart';
+import '../widgets/achievement_progress_card.dart';
 import '../../../../app/routes/app_routes.dart';
+import '../../../../shared/widgets/rounded_badge.dart';
+import '../../../../shared/widgets/gradient_progress_indicator.dart';
 
+/// Dashboard page for the Hibboo game feature
 class HibbooDashboardPage extends StatelessWidget {
+  /// Creates a HibbooDashboardPage
   const HibbooDashboardPage({super.key});
 
   @override
@@ -38,7 +43,6 @@ class HibbooDashboardPage extends StatelessWidget {
           ),
         ),
         actions: [
-          // Achievement badge indicator
           if (provider.hasAchievement)
             Padding(
               padding: const EdgeInsets.only(right: 12.0),
@@ -60,8 +64,7 @@ class HibbooDashboardPage extends StatelessWidget {
               Expanded(
                 child: Stack(
                   children: [
-                    // Using the new Lottie tree widget instead of the old TreeWidget
-                    LottieTreeWidget(
+                    TreeWidget(
                       stage: provider.currentStage,
                       growthPoints: provider.growthPoints,
                       showSparkles: provider.growthPoints > 0,
@@ -76,11 +79,14 @@ class HibbooDashboardPage extends StatelessWidget {
                           const SizedBox(height: 16),
                           _buildPlayButton(context),
 
-                          // Achievement counter
                           if (provider.correctAnswers > 0)
                             Padding(
                               padding: const EdgeInsets.only(top: 16.0),
-                              child: _buildAchievementProgress(provider),
+                              child: AchievementProgressCard(
+                                correctAnswers: provider.correctAnswers,
+                                targetAnswers: 85,
+                                achievementUnlocked: provider.hasAchievement,
+                              ),
                             ),
                         ],
                       ),
@@ -154,29 +160,20 @@ class HibbooDashboardPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.amber.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'Level ${provider.currentLevel}',
-                  style: TextStyle(
-                    color: Colors.amber[700],
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
+              RoundedBadge(
+                text: 'Level ${provider.currentLevel}',
+                backgroundColor: Colors.amber.withValues(alpha: 0.2),
+                textColor: Colors.amber[700]!,
               ),
             ],
           ),
           const SizedBox(height: 8),
-          LinearProgressIndicator(
+          GradientProgressIndicator(
             value: provider.growthPoints / 100,
-            backgroundColor: Colors.grey[200],
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.green[300]!),
-            borderRadius: BorderRadius.circular(10),
+            backgroundColor: Colors.grey[200]!,
+            startColor: Colors.green[300]!,
+            endColor: Colors.green[500]!,
+            borderRadius: 10,
           ),
         ],
       ),
@@ -199,9 +196,9 @@ class HibbooDashboardPage extends StatelessWidget {
           ),
           elevation: 4,
         ),
-        child: Row(
+        child: const Row(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             Icon(Icons.play_arrow),
             SizedBox(width: 8),
             Text(
@@ -210,93 +207,6 @@ class HibbooDashboardPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAchievementProgress(HibbooProvider provider) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 32),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color:
-              provider.hasAchievement
-                  ? Colors.amber
-                  : Colors.grey.withValues(alpha: 0.3),
-          width: provider.hasAchievement ? 2 : 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                provider.hasAchievement ? Icons.emoji_events : Icons.article,
-                color:
-                    provider.hasAchievement
-                        ? Colors.amber[700]
-                        : Colors.grey[600],
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                provider.hasAchievement
-                    ? 'Achievement Unlocked!'
-                    : 'Word Mastery',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color:
-                      provider.hasAchievement
-                          ? Colors.amber[700]
-                          : Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Stack(
-            children: [
-              // Progress bar background
-              Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              // Progress indicator
-              FractionallySizedBox(
-                widthFactor:
-                    provider.correctAnswers / 85 > 1
-                        ? 1
-                        : provider.correctAnswers / 85,
-                child: Container(
-                  height: 8,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors:
-                          provider.hasAchievement
-                              ? [Colors.amber[400]!, Colors.amber[700]!]
-                              : [Colors.green[300]!, Colors.green[500]!],
-                    ),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              '${provider.correctAnswers} / 85 correct answers',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
-          ),
-        ],
       ),
     );
   }

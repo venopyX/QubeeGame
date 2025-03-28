@@ -10,72 +10,101 @@ import '../../data/datasources/qubee_letter_generator.dart';
 import '../../data/models/qubee_model.dart';
 import '../../data/models/treasure_model.dart';
 
+/// Provider for managing Qubee Quest state and interactions
+///
+/// Handles letter data, user progress, audio playback, and persistence
 class QubeeQuestProvider extends ChangeNotifier {
-  // State variables
+  /// List of all Qubee letters
   List<Qubee> _letters = [];
+
+  /// List of treasures that can be collected
   List<Treasure> _treasures = [];
+
+  /// Currently selected letter
   Qubee? _currentLetter;
+
+  /// Total points earned by the user
   int _points = 0;
+
+  /// Whether audio is enabled
   bool _audioEnabled = true;
+
+  /// Whether to show audio error message
   bool _showAudioError = false;
+
+  /// Audio player for letter sounds and effects
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
-  // Initialization status
+
+  /// Whether initialization is complete
   bool _isInitialized = false;
-  
+
   // SharedPreferences keys
   static const String _pointsKey = 'qubee_quest_points';
   static const String _lettersKey = 'qubee_quest_letters';
   static const String _treasuresKey = 'qubee_quest_treasures';
   static const String _audioEnabledKey = 'qubee_quest_audio_enabled';
 
-  // Getters
+  /// All available Qubee letters
   List<Qubee> get letters => _letters;
+
+  /// All available treasures
   List<Treasure> get treasures => _treasures;
+
+  /// Currently selected letter
   Qubee? get currentLetter => _currentLetter;
+
+  /// Total points earned
   int get points => _points;
+
+  /// Whether audio is enabled
   bool get audioEnabled => _audioEnabled;
+
+  /// Whether to show audio error
   bool get showAudioError => _showAudioError;
+
+  /// Whether initialization is complete
   bool get isInitialized => _isInitialized;
 
-  // Constructor
+  /// Creates a new QubeeQuestProvider and initializes data
   QubeeQuestProvider() {
     _initializeData();
   }
 
-  // Load data
+  /// Loads data from SharedPreferences or initializes with defaults
   Future<void> _initializeData() async {
     try {
       // Try to load saved data first
       final bool dataLoaded = await _loadFromPreferences();
-      
+
       // If no data was loaded, initialize with defaults
       if (!dataLoaded) {
         _letters = QubeeLetterGenerator.generateBasicLetters();
 
-        _treasures = _letters
-            .map(
-              (letter) => Treasure(
-                id: letter.id,
-                qubeeLetterId: letter.id,
-                word: letter.unlockedWords.isNotEmpty
-                    ? letter.unlockedWords.first
-                    : '',
-                exampleSentence: letter.exampleSentence,
-                meaningOfSentence: letter.meaningOfSentence,
-                isCollected: false,
-              ),
-            )
-            .toList();
+        _treasures =
+            _letters
+                .map(
+                  (letter) => Treasure(
+                    id: letter.id,
+                    qubeeLetterId: letter.id,
+                    word:
+                        letter.unlockedWords.isNotEmpty
+                            ? letter.unlockedWords.first
+                            : '',
+                    exampleSentence: letter.exampleSentence,
+                    meaningOfSentence: letter.meaningOfSentence,
+                    isCollected: false,
+                  ),
+                )
+                .toList();
 
         _updateUnlockStatus();
-        
+
         // Save initial data - await this to ensure it completes
         await _saveToPreferences();
       }
 
       _currentLetter = _letters.firstWhereOrNull((letter) => letter.isUnlocked);
-      
+
       // Mark initialization as complete
       _isInitialized = true;
       notifyListeners();
@@ -87,95 +116,102 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
 
-  // Save to SharedPreferences with commit
+  /// Saves all state to SharedPreferences
   Future<void> _saveToPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Save points
       await prefs.setInt(_pointsKey, _points);
-      
+
       // Save audio preference
       await prefs.setBool(_audioEnabledKey, _audioEnabled);
-      
+
       // Save letters data
-      final lettersJson = _letters.map((letter) {
-        // Use QubeeModel for serialization if the object isn't already a QubeeModel
-        if (letter is QubeeModel) {
-          return letter.toJson();
-        } else {
-          return QubeeModel(
-            id: letter.id,
-            letter: letter.letter,
-            smallLetter: letter.smallLetter,
-            latinEquivalent: letter.latinEquivalent,
-            pronunciation: letter.pronunciation,
-            soundPath: letter.soundPath,
-            tracingPoints: letter.tracingPoints,
-            unlockedWords: letter.unlockedWords,
-            exampleSentence: letter.exampleSentence,
-            meaningOfSentence: letter.meaningOfSentence,
-            requiredPoints: letter.requiredPoints,
-            isUnlocked: letter.isUnlocked,
-            isCompleted: letter.isCompleted,
-            tracingAccuracy: letter.tracingAccuracy,
-            practiceCount: letter.practiceCount,
-          ).toJson();
-        }
-      }).toList();
+      final lettersJson =
+          _letters.map((letter) {
+            // Use QubeeModel for serialization if the object isn't already a QubeeModel
+            if (letter is QubeeModel) {
+              return letter.toJson();
+            } else {
+              return QubeeModel(
+                id: letter.id,
+                letter: letter.letter,
+                smallLetter: letter.smallLetter,
+                latinEquivalent: letter.latinEquivalent,
+                pronunciation: letter.pronunciation,
+                soundPath: letter.soundPath,
+                tracingPoints: letter.tracingPoints,
+                unlockedWords: letter.unlockedWords,
+                exampleSentence: letter.exampleSentence,
+                meaningOfSentence: letter.meaningOfSentence,
+                requiredPoints: letter.requiredPoints,
+                isUnlocked: letter.isUnlocked,
+                isCompleted: letter.isCompleted,
+                tracingAccuracy: letter.tracingAccuracy,
+                practiceCount: letter.practiceCount,
+              ).toJson();
+            }
+          }).toList();
       await prefs.setString(_lettersKey, jsonEncode(lettersJson));
-      
+
       // Save treasures data
-      final treasuresJson = _treasures.map((treasure) {
-        // Use TreasureModel for serialization if the object isn't already a TreasureModel
-        if (treasure is TreasureModel) {
-          return treasure.toJson();
-        } else {
-          return TreasureModel(
-            id: treasure.id,
-            qubeeLetterId: treasure.qubeeLetterId,
-            word: treasure.word,
-            exampleSentence: treasure.exampleSentence,
-            meaningOfSentence: treasure.meaningOfSentence,
-            isCollected: treasure.isCollected,
-          ).toJson();
-        }
-      }).toList();
+      final treasuresJson =
+          _treasures.map((treasure) {
+            // Use TreasureModel for serialization if the object isn't already a TreasureModel
+            if (treasure is TreasureModel) {
+              return treasure.toJson();
+            } else {
+              return TreasureModel(
+                id: treasure.id,
+                qubeeLetterId: treasure.qubeeLetterId,
+                word: treasure.word,
+                exampleSentence: treasure.exampleSentence,
+                meaningOfSentence: treasure.meaningOfSentence,
+                isCollected: treasure.isCollected,
+              ).toJson();
+            }
+          }).toList();
       await prefs.setString(_treasuresKey, jsonEncode(treasuresJson));
-      
+
       // Ensure data is persisted immediately
       await prefs.commit();
-      
+
       debugPrint('Saved QubeeQuest progress to preferences');
     } catch (e) {
       debugPrint('Error saving to preferences: $e');
     }
   }
 
-  // Load from SharedPreferences
+  /// Loads state from SharedPreferences
+  ///
+  /// Returns true if data was successfully loaded
   Future<bool> _loadFromPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Check if we have saved data
       if (!prefs.containsKey(_lettersKey)) {
         return false;
       }
-      
+
       // Load points
       _points = prefs.getInt(_pointsKey) ?? 0;
-      
+
       // Load audio preference
       _audioEnabled = prefs.getBool(_audioEnabledKey) ?? true;
-      
+
       // Load letters
       final lettersString = prefs.getString(_lettersKey);
       if (lettersString != null) {
         try {
           final lettersJson = jsonDecode(lettersString) as List;
-          _letters = lettersJson.map((json) => 
-            QubeeModel.fromJson(json as Map<String, dynamic>)
-          ).toList();
+          _letters =
+              lettersJson
+                  .map(
+                    (json) => QubeeModel.fromJson(json as Map<String, dynamic>),
+                  )
+                  .toList();
         } catch (e) {
           debugPrint('Error decoding letters JSON: $e');
           return false;
@@ -183,15 +219,19 @@ class QubeeQuestProvider extends ChangeNotifier {
       } else {
         return false;
       }
-      
+
       // Load treasures
       final treasuresString = prefs.getString(_treasuresKey);
       if (treasuresString != null) {
         try {
           final treasuresJson = jsonDecode(treasuresString) as List;
-          _treasures = treasuresJson.map((json) => 
-            TreasureModel.fromJson(json as Map<String, dynamic>)
-          ).toList();
+          _treasures =
+              treasuresJson
+                  .map(
+                    (json) =>
+                        TreasureModel.fromJson(json as Map<String, dynamic>),
+                  )
+                  .toList();
         } catch (e) {
           debugPrint('Error decoding treasures JSON: $e');
           return false;
@@ -199,7 +239,7 @@ class QubeeQuestProvider extends ChangeNotifier {
       } else {
         return false;
       }
-      
+
       debugPrint('Loaded QubeeQuest progress from preferences');
       return true;
     } catch (e) {
@@ -208,7 +248,7 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
 
-  // Select a letter
+  /// Selects a letter for practice
   void selectLetter(int letterId) {
     final letter = _letters.firstWhereOrNull((l) => l.id == letterId);
     if (letter != null && letter.isUnlocked) {
@@ -217,8 +257,13 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
 
-  // Mark letter as completed - UPDATED to use both accuracy and pathCoverage
-  Future<void> completeCurrentLetter(double accuracy, double pathCoverage) async {
+  /// Marks the current letter as completed with the given accuracy
+  ///
+  /// Awards points and unlocks new letters based on performance
+  Future<void> completeCurrentLetter(
+    double accuracy,
+    double pathCoverage,
+  ) async {
     if (_currentLetter == null) return;
 
     final index = _letters.indexWhere((l) => l.id == _currentLetter!.id);
@@ -257,7 +302,7 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
 
-  // Unlock next letter
+  /// Attempts to unlock the next letter in sequence
   void _unlockNextLetter() {
     if (_currentLetter == null) return;
 
@@ -270,7 +315,7 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
 
-  // Update unlock status based on points
+  /// Updates unlock status for all letters based on current points
   void _updateUnlockStatus() {
     for (int i = 0; i < _letters.length; i++) {
       if (!_letters[i].isUnlocked && _points >= _letters[i].requiredPoints) {
@@ -279,7 +324,7 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
 
-  // Add points and update unlock status
+  /// Adds points and updates letter unlock status
   Future<void> _addPoints(int amount) async {
     _points += amount;
     _updateUnlockStatus();
@@ -288,7 +333,7 @@ class QubeeQuestProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Collect treasures related to a letter
+  /// Marks treasures for a letter as collected
   void _collectTreasures(int letterId) {
     for (var i = 0; i < _treasures.length; i++) {
       if (_treasures[i].qubeeLetterId == letterId &&
@@ -298,7 +343,7 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
 
-  // Toggle audio
+  /// Toggles audio on/off
   Future<void> toggleAudio() async {
     _audioEnabled = !_audioEnabled;
     // Await to ensure saving completes
@@ -306,7 +351,7 @@ class QubeeQuestProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Play letter sound with improved error handling
+  /// Plays the sound for the current letter
   Future<void> playLetterSound() async {
     if (_currentLetter == null || !_audioEnabled) return;
 
@@ -335,7 +380,7 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
 
-  // Play sound effect with improved error handling
+  /// Plays a sound from the given asset path
   Future<void> playSound(String assetPath) async {
     if (!_audioEnabled) return;
 
@@ -359,23 +404,23 @@ class QubeeQuestProvider extends ChangeNotifier {
     }
   }
 
-  // Get treasure for a letter
+  /// Gets the treasure associated with a specific letter
   Treasure? getTreasureForLetter(int letterId) {
     return _treasures.firstWhereOrNull(
       (t) => t.qubeeLetterId == letterId && t.isCollected,
     );
   }
 
-  // Get letter progress percentage across all letters
+  /// Gets the overall learning progress as a percentage
   double get overallProgress {
     if (_letters.isEmpty) return 0.0;
     return _letters.where((l) => l.isCompleted).length / _letters.length;
   }
 
-  // Get unlocked letter count
+  /// Gets the count of unlocked letters
   int get unlockedLetterCount => _letters.where((l) => l.isUnlocked).length;
 
-  // Save data on app pause
+  /// Saves state when app is paused
   Future<void> saveStateOnPause() async {
     // Called when app is sent to background
     await _saveToPreferences();
@@ -393,8 +438,9 @@ class QubeeQuestProvider extends ChangeNotifier {
   }
 }
 
-// Helper extension to get firstWhereOrNull functionality
+/// Helper extension for firstWhereOrNull functionality
 extension FirstWhereExt<T> on Iterable<T> {
+  /// Returns the first element satisfying [test], or null if none found
   T? firstWhereOrNull(bool Function(T) test) {
     for (var element in this) {
       if (test(element)) return element;
@@ -403,8 +449,9 @@ extension FirstWhereExt<T> on Iterable<T> {
   }
 }
 
-// Extension for SharedPreferences to add commit method
+/// Extension for SharedPreferences to add commit method
 extension SharedPreferencesExtension on SharedPreferences {
+  /// Forces immediate write to disk
   Future<bool> commit() async {
     // This is a workaround to force immediate write to disk
     // SharedPreferences normally writes asynchronously which can lead to data loss

@@ -1,18 +1,34 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:confetti/confetti.dart';
 
+/// An overlay widget that shows a celebration when a letter is completed
+///
+/// Displays confetti, success messages, and information about newly unlocked content
 class CelebrationOverlay extends StatefulWidget {
+  /// Animation controller to manage the overlay animations
   final AnimationController controller;
+
+  /// Callback when the user dismisses the overlay
   final VoidCallback onDone;
-  final String? treasureWord;
-  final double accuracy;
+
+  /// The letter that was completed (uppercase version)
   final String letterCompleted;
+
+  /// The Latin equivalent of the letter
   final String latinEquivalent;
+
+  /// Word that was unlocked by completing this letter (if any)
+  final String? treasureWord;
+
+  /// Tracing accuracy achieved by the user (0.0 to 1.0)
+  final double accuracy;
+
+  /// Example sentence using the newly unlocked word
   final String? exampleSentence;
 
+  /// Creates a CelebrationOverlay
   const CelebrationOverlay({
     required this.controller,
     required this.onDone,
@@ -67,6 +83,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
     super.dispose();
   }
 
+  /// Returns a congratulatory message based on the achieved accuracy
   String _getAccuracyMessage() {
     final accuracy = widget.accuracy;
 
@@ -78,6 +95,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
     return 'Keep practicing!';
   }
 
+  /// Returns a color representing the quality of the achieved accuracy
   Color _getAccuracyColor() {
     final accuracy = widget.accuracy;
 
@@ -98,7 +116,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
           // Semi-transparent background with blur effect
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: Container(color: Colors.black.withAlpha(179)),
+            child: Container(color: Colors.black.withValues(alpha: 0.7)),
           ),
 
           // Multiple confetti effects from different angles
@@ -168,7 +186,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withAlpha(77),
+                        color: Colors.blue.withValues(alpha: 0.3),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -283,7 +301,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                             border: Border.all(color: Colors.amber[300]!),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.amber.withAlpha(77),
+                                color: Colors.amber.withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 spreadRadius: 1,
                               ),
@@ -309,7 +327,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                                         ],
                                       ).createShader(bounds);
                                     },
-                                    child: Text(
+                                    child: const Text(
                                       'New Word Unlocked!',
                                       style: TextStyle(
                                         fontSize: 18,
@@ -344,7 +362,9 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.amber.withAlpha(100),
+                                            color: Colors.amber.withValues(
+                                              alpha: 0.4,
+                                            ),
                                             blurRadius: 6,
                                             spreadRadius: 1,
                                           ),

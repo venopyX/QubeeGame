@@ -3,9 +3,15 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/video.dart';
 import '../providers/playhouse_provider.dart';
 import '../widgets/video_card_widget.dart';
+import '../widgets/category_filter.dart';
+import '../widgets/empty_videos_indicator.dart';
 import 'playhouse_playing_page.dart';
 
+/// Dashboard page displaying available videos in a grid
+///
+/// Allows searching and filtering videos by category
 class PlayhouseDashboardPage extends StatefulWidget {
+  /// Creates a PlayhouseDashboardPage
   const PlayhouseDashboardPage({super.key});
 
   @override
@@ -13,6 +19,7 @@ class PlayhouseDashboardPage extends StatefulWidget {
 }
 
 class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
+  /// Controller for the search input field
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -50,10 +57,12 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
     );
   }
 
+  /// Builds a loading indicator view
   Widget _buildLoadingView() {
     return const Center(child: CircularProgressIndicator());
   }
 
+  /// Builds an error view with retry option
   Widget _buildErrorView(String error) {
     return Center(
       child: Column(
@@ -84,16 +93,20 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
     );
   }
 
+  /// Builds the main dashboard view with search, filters and video grid
   Widget _buildDashboardView(PlayhouseProvider provider) {
     return CustomScrollView(
       slivers: [
         _buildAppBar(),
         _buildSearchAndFilter(provider),
-        _buildVideosGrid(provider),
+        provider.videos.isEmpty
+            ? const EmptyVideosIndicator()
+            : _buildVideosGrid(provider),
       ],
     );
   }
 
+  /// Builds the app bar with gradient background
   Widget _buildAppBar() {
     return SliverAppBar(
       expandedHeight: 120,
@@ -135,6 +148,7 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
     );
   }
 
+  /// Builds search field and category filter chips
   Widget _buildSearchAndFilter(PlayhouseProvider provider) {
     return SliverToBoxAdapter(
       child: Padding(
@@ -146,48 +160,24 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search videos...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                contentPadding: EdgeInsets.symmetric(vertical: 12.0),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
               ),
               onChanged: (value) {
                 provider.search(value);
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Category filter chips
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  FilterChip(
-                    label: Text('All'),
-                    selected: provider.selectedCategory == null,
-                    onSelected: (_) {
-                      provider.selectCategory(null);
-                    },
-                  ),
-                  SizedBox(width: 8),
-                  ...provider.availableCategories.map((category) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: FilterChip(
-                        label: Text(category),
-                        selected: provider.selectedCategory == category,
-                        onSelected: (_) {
-                          provider.selectCategory(
-                            provider.selectedCategory == category
-                                ? null
-                                : category,
-                          );
-                        },
-                      ),
-                    );
-                  }),
-                ],
-              ),
+            CategoryFilter(
+              categories: provider.availableCategories,
+              selectedCategory: provider.selectedCategory,
+              onCategorySelected: (category) {
+                provider.selectCategory(category);
+              },
             ),
           ],
         ),
@@ -195,30 +185,8 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
     );
   }
 
+  /// Builds a grid of video cards
   Widget _buildVideosGrid(PlayhouseProvider provider) {
-    if (provider.videos.isEmpty) {
-      return SliverFillRemaining(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.video_library, size: 64, color: Colors.grey),
-              SizedBox(height: 16),
-              Text(
-                'No videos found',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Try adjusting your search or filters',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return SliverPadding(
       padding: const EdgeInsets.all(16),
       sliver: SliverGrid(
@@ -241,6 +209,7 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
     );
   }
 
+  /// Opens a video for playback
   void _openVideo(
     BuildContext context,
     PlayhouseProvider provider,
@@ -252,6 +221,7 @@ class _PlayhouseDashboardPageState extends State<PlayhouseDashboardPage> {
     ).push(MaterialPageRoute(builder: (_) => const PlayhousePlayingPage()));
   }
 
+  /// Shows an info dialog about the playhouse feature
   void _showInfoDialog(BuildContext context) {
     showDialog(
       context: context,
