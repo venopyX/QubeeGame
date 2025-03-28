@@ -1,14 +1,27 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../domain/entities/word_pair.dart';
 
+/// A card widget that displays a word or image for the word matching game
 class WordCardWidget extends StatelessWidget {
+  /// The word pair to display
   final WordPair wordPair;
+
+  /// Whether this word has been matched
   final bool isMatched;
+
+  /// Whether to show the word (not used in current implementation)
   final bool showWord;
+
+  /// Whether this is a target card (showing image) or a word card
   final bool isTarget;
+
+  /// Callback for when the card is tapped
   final Function(WordPair)? onTap;
 
+  /// Creates a WordCardWidget
   const WordCardWidget({
     super.key,
     required this.wordPair,
@@ -26,7 +39,7 @@ class WordCardWidget extends StatelessWidget {
               ? null
               : () {
                 if (onTap != null) {
-                  print("Word card tapped: ${wordPair.id}");
+                  developer.log("Word card tapped: ${wordPair.id}");
                   onTap!(wordPair);
                 }
               },
@@ -60,6 +73,7 @@ class WordCardWidget extends StatelessWidget {
     );
   }
 
+  /// Builds a target card displaying an image with meaning
   Widget _buildTargetCard() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(15),
@@ -149,6 +163,7 @@ class WordCardWidget extends StatelessWidget {
     );
   }
 
+  /// Builds a card displaying only the word
   Widget _buildWordCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -166,6 +181,7 @@ class WordCardWidget extends StatelessWidget {
     );
   }
 
+  /// Gets the appropriate background color based on card state
   Color _getBackgroundColor() {
     if (isMatched) {
       return Colors.green.shade50;
