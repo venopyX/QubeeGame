@@ -4,7 +4,9 @@ import '../providers/qubee_quest_provider.dart';
 import '../widgets/qubee_letter_card_widget.dart';
 import 'qubee_quest_letter_page.dart';
 
+/// Main page showing all Qubee letters in a grid with progress tracking
 class QubeeQuestMapPage extends StatefulWidget {
+  /// Creates a QubeeQuestMapPage
   const QubeeQuestMapPage({super.key});
 
   @override
@@ -15,12 +17,10 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
   @override
   void initState() {
     super.initState();
-    // Initialize data
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // No need to call any initialization since it happens in the constructor
-    });
+    // No need to call any initialization since it happens in the provider constructor
   }
 
+  /// Navigates to the letter practice page for the given letter ID
   void _navigateToLetterPage(int letterId) {
     Navigator.push(
       context,
@@ -250,6 +250,7 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
     );
   }
 
+  /// Shows a dialog with game statistics
   void _showStatsDialog(BuildContext context, QubeeQuestProvider provider) {
     final completedCount = provider.letters.where((l) => l.isCompleted).length;
     final unlockedCount = provider.unlockedLetterCount;
@@ -334,6 +335,7 @@ class _QubeeQuestMapPageState extends State<QubeeQuestMapPage> {
     );
   }
 
+  /// Builds an individual stat item for the stats dialog
   Widget _buildStatItem(
     BuildContext context,
     String title,
