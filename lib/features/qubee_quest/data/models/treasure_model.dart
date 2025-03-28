@@ -1,6 +1,8 @@
 import '../../domain/entities/treasure.dart';
 
+/// Data model for Treasure with JSON serialization capabilities
 class TreasureModel extends Treasure {
+  /// Creates a TreasureModel with the provided values
   TreasureModel({
     required super.id,
     required super.qubeeLetterId,
@@ -10,6 +12,7 @@ class TreasureModel extends Treasure {
     super.isCollected,
   });
 
+  /// Creates a TreasureModel from a JSON map
   factory TreasureModel.fromJson(Map<String, dynamic> json) {
     return TreasureModel(
       id: json['id'],
@@ -21,6 +24,7 @@ class TreasureModel extends Treasure {
     );
   }
 
+  /// Converts the model to a JSON map
   Map<String, dynamic> toJson() {
     return {
       'id': id,
