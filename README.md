@@ -26,7 +26,7 @@ This Flutter application is designed to provide an engaging and educational expe
 
 - [Deployed Application](https://github.com/venopyX/QubeeGame/releases/tag/v1.0.0) => [![Download](https://img.shields.io/badge/Download-QubeeGames%20v1.0.0-blue)](https://github.com/venopyX/QubeeGame/releases/tag/v1.0.0)
 
-- [Project Blog Article](https://medium.com/@venopyx/building-qubee-games-educational-app-with-flutter-123456)
+- [Project Blog Article](https://medium.com/@gladsonchala/the-qubee-games-journey-preserving-cultural-heritage-through-educational-gaming-6ff1f71b000e)
 
 ## Demo Video
 
